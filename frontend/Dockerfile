@@ -1,10 +1,10 @@
 # Build de l'application Angular
-FROM node:18 AS build
+FROM node:20 AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build --configuration=production
+RUN npm run build
 
 # Serveur Nginx pour servir l'application Angular 
 FROM nginx:alpine
