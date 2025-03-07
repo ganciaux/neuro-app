@@ -18,7 +18,6 @@ mkdir -p frontend/src/assets frontend/src/environments docker/{backend,frontend}
 
 # Fichiers Backend
 touch backend/.env.example
-mkdir backend/prisma && touch backend/prisma/schema.prisma
 
 # Fichiers Docker et config
 touch docker-compose.yml
@@ -28,3 +27,8 @@ touch backend/Dockerfile frontend/Dockerfile
 touch README.md .gitignore
 
 docker-compose up --build
+
+npm install prisma @prisma/client
+npx prisma init --datasource-provider postgresql
+npx prisma migrate dev --name init
+npx prisma generate

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +23,16 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.9",
     "@types/winston": "^2.4.4",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/parser": "^8.26.0",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "express-list-endpoints": "^7.1.1",
+    "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-watch": "^6.2.1",
     "typescript": "^5.8.2"
   },
   "dependencies": {
@@ -36,10 +45,11 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "install": "^0.13.0",
-    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "npm": "^11.2.0",
     "prisma": "^6.4.1",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "zod": "^3.24.2"
   }
 }
