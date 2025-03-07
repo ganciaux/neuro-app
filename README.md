@@ -32,3 +32,11 @@ npm install prisma @prisma/client
 npx prisma init --datasource-provider postgresql
 npx prisma migrate dev --name init
 npx prisma generate
+
+npm run test:setup
+npm run test
+
+npx kill-port 3000
+
+psql -U neuro -d neuro_db
+psql -U neuro -d neuro_db_test

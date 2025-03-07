@@ -10,20 +10,25 @@ const PORT = process.env.PORT || '3000';
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(express.json()); // Pour parser le JSON
+app.use(express.json());
 
 app.use(routes);
 
-// Lister les routes disponibles
 app.get('/routes', (req, res) => {
     const endpoints = listEndpoints(app);
     res.json(endpoints);
   });
 
 prisma.$connect()
-    .then(() => console.log('✅ Connected to PostgreSQL'))
+    .then(() => {
+        console.log(process.env.ENV)
+        console.log('✅ Connected to PostgreSQL')
+
+    })
     .catch((err) => console.error('❌ Database connection error:', err));
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+export { app, server };
