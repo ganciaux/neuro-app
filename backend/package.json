@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --runInBand",
+    "build": "tsc",
+    "start-server": "node dist/index.js",
+    "start-dev-server": "tsc-watch --onSuccess \"node dist/index.js 3000\"",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "keywords": [],
