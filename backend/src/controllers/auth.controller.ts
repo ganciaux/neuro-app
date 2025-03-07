@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { registerUser, loginUser } from '../services/authService';
-import {UserLoginDTO, UserRegisterDTO} from '../models/user.model'
+import {UserLoginDTO, UserRegisterDTO} from '../dtos/user.model'
 import { UserRegisterSchema } from '../schemas/user.schema';
 
 export async function register(request: Request, response: Response) {

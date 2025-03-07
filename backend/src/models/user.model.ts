@@ -1,5 +1,3 @@
-import { z } from 'zod';
-import { UserLoginSchema, UserRegisterSchema } from '../schemas/user.schema';
 
 export enum UserRole {
     USER = 'USER',
@@ -11,7 +9,3 @@ export enum UserRole {
     email: string;
     role: UserRole;
 }
-
-export type UserRegisterDTO = z.infer<typeof UserRegisterSchema>;
-
-export type UserLoginDTO = z.infer<typeof UserLoginSchema>;
