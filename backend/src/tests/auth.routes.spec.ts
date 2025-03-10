@@ -5,47 +5,65 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 describe('Auth Routes', () => {
-    let authToken: string;
-    beforeAll(async () => {
+    const email="test@test.com";
+    const password="passwordTest"
+
+    describe('POST /v1/register', () => {
+        it('should register a new user', async () => {
+            const res = await request(app)
+                .post('/v1/auth/register')
+                .send({
+                    email,
+                    password,
+                    name: 'Test',
+                });
+
+            expect(res.status).toBe(201);
+            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('email');
+
+            expect(res.body.email).toBe("test@test.com");
+
+            const user = await prisma.user.findUnique({ where: { email } });
+            expect(user).not.toBeNull();
+        });
+
+        it('should return 400 for duplicate email', async () => {
+            const res = await request(app)
+                .post('/v1/auth/register')
+                .send({
+                    email,
+                    password,
+                });
         
+            expect(res.status).toBe(400);
+        });
     });
 
-    beforeEach(async () => {
+    describe('POST /v1/login', () => {
+        it('should login a user and return a token', async () => {
+            const res = await request(app)
+                .post('/v1/auth/login')
+                .send({
+                    email,
+                    password
+                });
+
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('token');
+        });
+
+        it('should return 401 for invalid credentials', async () => {
+            const res = await request(app)
+                .post('/v1/auth/login')
+                .send({
+                    email,
+                    password: 'passwordWrong',
+                });
         
-    });
-
-    afterAll(async () => {
-        
-    });
-
-    it('should register a new user', async () => {
-        const email=`test${Math.random()}@example.com`;
-        const res = await request(app)
-            .post('/v1/auth/register')
-            .send({
-                email ,
-                password: 'password123',
-                name: 'Test User',
-            });
-
-        expect(res.status).toBe(201);
-        expect(res.body.email).toBe(email);
-
-        const user = await prisma.user.findUnique({ where: { email: 'test@example.com' } });
-        expect(user).not.toBeNull();
-    });
-
-    it('should login a user and return a token', async () => {
-        const res = await request(app)
-            .post('/v1/auth/login')
-            .send({
-                email: 'test@example.com',
-                password: 'password123'
-            });
-
-        expect(res.status).toBe(200);
-        expect(res.body).toHaveProperty('token');
-        authToken = res.body.token;
+            expect(res.status).toBe(401);
+        });
     });
 
 });
+

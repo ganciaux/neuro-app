@@ -7,6 +7,7 @@ import listEndpoints from 'express-list-endpoints'
 dotenv.config();
 
 const PORT = process.env.PORT || '3000';
+const ENV = process.env.ENV || 'example'
 const app = express();
 const prisma = new PrismaClient();
 
@@ -14,14 +15,16 @@ app.use(express.json());
 
 app.use(routes);
 
-app.get('/routes', (req, res) => {
-    const endpoints = listEndpoints(app);
-    res.json(endpoints);
-  });
+if (ENV==="dev"){
+    app.get('/routes', (req, res) => {
+        const endpoints = listEndpoints(app);
+        res.json(endpoints);
+    });
+    }
 
 prisma.$connect()
     .then(() => {
-        console.log(process.env.ENV)
+        console.log(process.env.ENV_LABEL)
         console.log('✅ Connected to PostgreSQL')
 
     })

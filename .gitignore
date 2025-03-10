@@ -41,6 +41,7 @@ Thumbs.db
 backend/node_modules/
 backend/dist/
 backend/prisma/migrations/
+backend/src/tests/test-report.html
 
 # Frontend
 frontend/node_modules/

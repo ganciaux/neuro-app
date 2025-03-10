@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { UserRole, UserAuthenticated } from '../models/user.model';
+import { User, UserRole, UserJWT } from '../models/user.model';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
@@ -8,12 +11,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 declare global {
   namespace Express {
     interface Request {
-      user?: UserAuthenticated; // Define the type of `user` as needed
+      user?: User;
     }
   }
 }
 
-export function authGuard(
+export async function authGuard(
   request: Request,
   response: Response,
   next: NextFunction,
@@ -26,8 +29,18 @@ export function authGuard(
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as UserAuthenticated;
-    request.user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET) as UserJWT;
+    
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!user) {
+      response.status(401).json({ error: 'Invalid token' });
+      return;
+    }
+
+    request.user = user;
     next();
   } catch (error) {
     response.status(401).json({ error: 'Invalid token' });

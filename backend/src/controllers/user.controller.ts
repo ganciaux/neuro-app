@@ -2,8 +2,9 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const SALT_ROUNDS = 10;
 const prisma = new PrismaClient();
+
+const PASSWORD_SALT_ROUNDS = Number(process.env.PASSWORD_SALT_ROUNDS || 10);
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
@@ -62,7 +63,7 @@ export const createUser = async (req: Request, res: Response) => {
       res.status(400).json({ message: 'Cet email est déjà utilisé' });
       return;
     }
-    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    const salt = await bcrypt.genSalt(PASSWORD_SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = await prisma.user.create({
       data: {

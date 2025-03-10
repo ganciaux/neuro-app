@@ -6,4 +6,11 @@ export default {
       '^.+\\.ts$': 'ts-jest',
     },
     testMatch: ['**/*.spec.ts'],
+    reporters: [
+      "default",
+      [ "jest-html-reporter", {
+        pageTitle: "Jest Test Report",
+        outputPath: "src/tests/test-report.html"
+      }]
+    ]
   };
