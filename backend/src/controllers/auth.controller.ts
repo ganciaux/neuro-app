@@ -13,7 +13,7 @@ export async function register(request: Request, response: Response) {
         response.status(201).json(user);
         return;
     } catch (error) {
-        logger.error(`Error:`, (error as Error).message)
+        logger.error(`[req:${request.requestId}]:`, error)
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             if (error.code === 'P2002') {
               response.status(400).json({ error: "Cet email est déjà utilisé." });
@@ -33,7 +33,7 @@ export async function login(request: Request, response: Response) {
         response.json({ token });
         return; 
     } catch (error) {
-        logger.error(`Error:`, (error as Error).message)
+        logger.error(`[req:${request.requestId}]:`, error)
         response.status(401).json({ error: "Can't loggin" });
     }
 }

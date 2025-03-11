@@ -1,17 +1,22 @@
 import request from 'supertest';
 import { app } from '../index';
 import { PrismaClient } from '@prisma/client';
+import { logger } from '../logger/logger';
 
 const prisma = new PrismaClient();
+
+const API_BASE_PATH="/api/v1/auth"
+
+logger.info('🛡️ Auth Routes');
 
 describe('Auth Routes', () => {
     const email="test@test.com";
     const password="passwordTest"
 
-    describe('POST /v1/register', () => {
+    describe(`POST ${API_BASE_PATH}/register`, () => {
         it('should register a new user', async () => {
             const res = await request(app)
-                .post('/v1/auth/register')
+                .post(`${API_BASE_PATH}/register`)
                 .send({
                     email,
                     password,
@@ -30,7 +35,7 @@ describe('Auth Routes', () => {
 
         it('should return 400 for duplicate email', async () => {
             const res = await request(app)
-                .post('/v1/auth/register')
+                .post(`${API_BASE_PATH}/register`)
                 .send({
                     email,
                     password,
@@ -40,10 +45,10 @@ describe('Auth Routes', () => {
         });
     });
 
-    describe('POST /v1/login', () => {
+    describe(`POST ${API_BASE_PATH}/login`, () => {
         it('should login a user and return a token', async () => {
             const res = await request(app)
-                .post('/v1/auth/login')
+                .post(`${API_BASE_PATH}/login`)
                 .send({
                     email,
                     password
@@ -55,7 +60,7 @@ describe('Auth Routes', () => {
 
         it('should return 401 for invalid credentials', async () => {
             const res = await request(app)
-                .post('/v1/auth/login')
+                .post(`${API_BASE_PATH}/login`)
                 .send({
                     email,
                     password: 'passwordWrong',

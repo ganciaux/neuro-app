@@ -4,25 +4,24 @@ import bcrypt from 'bcryptjs';
 import { logger } from '../logger/logger';
 import { UserCreateSchema } from '../schemas/user.schema';
 import { UserCreateDTO } from '../dtos/user.dto';
+import { APP_ENV } from '../config/environment';
 
 const prisma = new PrismaClient();
 
-const PASSWORD_SALT_ROUNDS = Number(process.env.PASSWORD_SALT_ROUNDS || 10);
-
-export const getProfile = async (req: Request, res: Response) => {
+export const getProfile = async (request: Request, response: Response) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user?.id },
+      where: { id: request.user?.id },
       select: { id: true, email: true, name: true, role: true },
     });
     if (!user) {
-      res.status(404).json({ message: 'Utilisateur non trouvé' });
+      response.status(404).json({ message: 'Utilisateur non trouvé' });
       return;
     }
-    res.json(user);
+    response.json(user);
   } catch (error) {
-    logger.error(`Error:`, (error as Error).message)
-    res.status(500).json({ message: 'Erreur serveur' });
+    logger.error(`[req:${request.requestId}]:`, error)
+    response.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
@@ -47,35 +46,35 @@ export async function getUserById(request: Request, response: Response) {
 
     response.json(user);
   } catch (error) {
-    logger.error(`Error:`, (error as Error).message)
+    logger.error(`[req:${request.requestId}]:`, error)
     response.status(500).json({error: 'Server error'});
   }
 }
 
-export const getAllUsers = async (_req: Request, res: Response) => {
+export const getAllUsers = async (request: Request, response: Response) => {
   try {
     const users = await prisma.user.findMany({
       select: { id: true, email: true, name: true, role: true },
     });
-    res.json(users);
+    response.json(users);
   } catch (error) {
-    logger.error(`Error:`, (error as Error).message)
-    res.status(500).json({ message: 'Server error' });
+    logger.error(`[req:${request.requestId}]:`, error)
+    response.status(500).json({ message: 'Server error' });
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (request: Request, response: Response) => {
   try {
     const validatedData = UserCreateSchema.parse(request.body);
     const { email, password, name, role }:UserCreateDTO = validatedData;
     const existingUser = await prisma.user.findUnique({where: { email }});
 
     if (existingUser) {
-      res.status(400).json({ message: 'Cet email est déjà utilisé' });
+      response.status(400).json({ message: 'Cet email est déjà utilisé' });
       return;
     }
 
-    const salt = await bcrypt.genSalt(PASSWORD_SALT_ROUNDS);
+    const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = await prisma.user.create({
       data: {
@@ -88,17 +87,17 @@ export const createUser = async (req: Request, res: Response) => {
       select: { id: true, email: true, name: true, role: true },
     });
 
-    res.status(201).json(user);
+    response.status(201).json(user);
   } catch (error) {
-    logger.error(`Error:`, (error as Error).message)
-    res.status(500).json({ message: 'Erreur serveur' });
+    logger.error(`[req:${request.requestId}]:`, error)
+    response.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (request: Request, response: Response) => {
   try {
-    const { name, email, role } = req.body;
-    const userId = req.params.id;
+    const { name, email, role } = request.body;
+    const userId = request.params.id;
 
     const user = await prisma.user.update({
       where: { id: userId },
@@ -110,21 +109,21 @@ export const updateUser = async (req: Request, res: Response) => {
       select: { id: true, email: true, name: true, role: true },
     });
 
-    res.json(user);
+    response.json(user);
   } catch (error) {
-    logger.error(`Error:`, (error as Error).message)
-    res.status(500).json({ message: 'Erreur serveur' });
+    logger.error(`[req:${request.requestId}]:`, error)
+    response.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (request: Request, response: Response) => {
   try {
-    const userId = req.params.id;
+    const userId = request.params.id;
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      res.status(404).json({ error: 'Utilisateur non trouvé' });
+      response.status(404).json({ error: 'Utilisateur non trouvé' });
       return;
     }
 
@@ -132,9 +131,9 @@ export const deleteUser = async (req: Request, res: Response) => {
       where: { id: userId },
     });
 
-    res.status(204).send();
+    response.status(204).send();
   } catch (error) {
-    logger.error(`Error:`, (error as Error).message)
-    res.status(500).json({ message: 'Erreur serveur' });
+    logger.error(`[req:${request.requestId}]:`, error)
+    response.status(500).json({ message: 'Erreur serveur' });
   }
 };

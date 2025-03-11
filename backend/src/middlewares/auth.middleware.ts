@@ -2,10 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User, UserRole, UserJWT } from '../models/user.model';
 import { PrismaClient } from '@prisma/client';
+import { APP_ENV } from '../config/environment';
 
 const prisma = new PrismaClient();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
 // Extend the Request type to include the user property
 declare global {
@@ -29,7 +28,7 @@ export async function authGuard(
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as UserJWT;
+    const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWT;
     
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },

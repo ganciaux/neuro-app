@@ -1,21 +1,17 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient, User } from '@prisma/client';
-import dotenv from 'dotenv';
 import { UserRole } from '../models/user.model';
+import { APP_ENV } from '../config/environment';
 
-dotenv.config();
 const prisma = new PrismaClient();
-
-const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
 export async function registerUser(
   email: string,
   password: string,
   name: string = '',
 ) {
-  const salt = await bcrypt.genSalt(SALT_ROUNDS);
+  const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const user = await prisma.user.create({
@@ -38,7 +34,7 @@ export async function loginUser(email: string, password: string) {
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) throw new Error('Invalid credentials');
 
-  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ id: user.id }, APP_ENV.JWT_SECRET, { expiresIn: '1h' });
 
   return { token };
 }

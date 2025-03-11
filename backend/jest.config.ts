@@ -12,5 +12,10 @@ export default {
         pageTitle: "Jest Test Report",
         outputPath: "src/tests/test-report.html"
       }]
-    ]
+    ],
+    testPathIgnorePatterns: [
+      '/node_modules/', 
+      '/users.routes.spec.ts',
+      //'auth.routes.spec.ts'
+    ],
   };

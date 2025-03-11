@@ -1,5 +1,6 @@
 import * as winston from 'winston';
 import * as fs from 'fs';
+import { APP_ENV } from '../config/environment';
 
 // Vérifier si le dossier logs existe
 if (!fs.existsSync('logs')) {
@@ -12,7 +13,7 @@ const transports: winston.transport[] = [
   new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
 ];
 
-if (process.env.NODE_ENV !== 'production') {
+if (APP_ENV.NODE_ENV !== 'production') {
   transports.push(
     new winston.transports.Console({
       format: winston.format.combine(
@@ -25,7 +26,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Création du logger avec des types corrects
 export const logger = winston.createLogger({
-  level: process.env.LOGGER_LEVEL || 'info',
+  level: APP_ENV.LOGGER_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json()
