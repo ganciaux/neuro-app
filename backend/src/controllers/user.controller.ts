@@ -21,6 +21,7 @@ export const getProfile = async (req: Request, res: Response) => {
     }
     res.json(user);
   } catch (error) {
+    logger.error(`Error:`, (error as Error).message)
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };

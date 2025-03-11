@@ -3,10 +3,11 @@ import { PrismaClient } from '@prisma/client';
 import { app } from '../index';
 
 const prisma = new PrismaClient();
+const API_BASE_PATH="/api/v1"
 
 describe('User Routes', () => {
 
-    describe('GET /v1/users/me', () => {
+    describe(`GET ${API_BASE_PATH}/users/me`, () => {
         it('should get current user profile', async () => {
             const res = await request(app)
                 .get('/v1/users/me')
@@ -25,7 +26,7 @@ describe('User Routes', () => {
     
     });
 
-    describe('GET /v1/users/:id', () => {
+    describe(`GET ${API_BASE_PATH}/users/:id`, () => {
 
         it('should return a user by ID', async () => {
             const res = await request(app)
@@ -45,7 +46,7 @@ describe('User Routes', () => {
         });
     })
 
-    describe('PUT /v1/users/:id', () => {
+    describe(`PUT ${API_BASE_PATH}/users/:id`, () => {
         it('should update a user by ID (user)', async () => {
             const res = await request(app)
                 .put(`/v1/users/${globalThis.user.auth.user.id}`)
@@ -78,7 +79,7 @@ describe('User Routes', () => {
         });
     });
 
-    describe('DELETE /v1/users/:id', () => {
+    describe(`DELETE ${API_BASE_PATH}/users/:id`, () => {
         it('should return 500 if user is not admin', async () => {
             const res = await request(app)
                 .delete(`/v1/users/${globalThis.user.auth.user.id}`)
@@ -96,7 +97,7 @@ describe('User Routes', () => {
         });
     });
 
-    describe('GET /v1/users', () => {
+    describe(`GET ${API_BASE_PATH}/users`, () => {
         it('should return all users (admin)', async () => {
             const res = await request(app)
                 .get('/v1/users')
@@ -115,7 +116,7 @@ describe('User Routes', () => {
         });
     });
 
-    describe('GET /v1/users', () => {
+    describe(`GET ${API_BASE_PATH}/users`, () => {
         it('should return all users (admin)', async () => {
             const res = await request(app)
                 .get('/v1/users')
@@ -134,7 +135,7 @@ describe('User Routes', () => {
         });
     });
 
-    describe('POST /v1/users', () => {
+    describe(`POST ${API_BASE_PATH}/users`, () => {
         it('should create a new user (admin)', async () => {
             const res = await request(app)
                 .post('/v1/users')
