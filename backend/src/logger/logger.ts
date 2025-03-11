@@ -18,9 +18,9 @@ if (APP_ENV.NODE_ENV !== 'production') {
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple()
+        winston.format.simple(),
       ),
-    })
+    }),
   );
 }
 
@@ -28,8 +28,11 @@ if (APP_ENV.NODE_ENV !== 'production') {
 export const logger = winston.createLogger({
   level: APP_ENV.LOGGER_LEVEL || 'info',
   format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    //winston.format.json(),
+    winston.format.printf(
+      (info) => `${info.timestamp} [${info.level}]: ${info.message}`,
+    ),
   ),
   transports,
 });

@@ -1,16 +1,8 @@
 export {};
 
-import { UserAuth } from '../models/user.model'
+import { UserTest } from '../models/user.model';
 
 declare global {
-  var user: {
-    email: string;
-    password: string;
-    auth:UserAuth;
-  },
-  var admin: {
-    email: string;
-    password: string;
-    auth:UserAuth;
-  }
+  var user: UserTest;
+  var admin: UserTest;
 }

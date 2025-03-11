@@ -29,9 +29,9 @@ export async function authGuard(
 
   try {
     const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWT;
-    
+
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.sub },
     });
 
     if (!user) {

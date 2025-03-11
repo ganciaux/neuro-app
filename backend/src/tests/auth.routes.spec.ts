@@ -5,70 +5,65 @@ import { logger } from '../logger/logger';
 
 const prisma = new PrismaClient();
 
-const API_BASE_PATH="/api/v1/auth"
+const API_BASE_PATH = '/api/v1/auth';
 
 logger.info('🛡️ Auth Routes');
 
 describe('Auth Routes', () => {
-    const email="test@test.com";
-    const password="passwordTest"
+  let email: string;
+  let password: string;
 
-    describe(`POST ${API_BASE_PATH}/register`, () => {
-        it('should register a new user', async () => {
-            const res = await request(app)
-                .post(`${API_BASE_PATH}/register`)
-                .send({
-                    email,
-                    password,
-                    name: 'Test',
-                });
+  beforeAll(async () => {
+    email = 'test@test.com';
+    password = 'passwordTest';
+  });
 
-            expect(res.status).toBe(201);
-            expect(res.body).toHaveProperty('id');
-            expect(res.body).toHaveProperty('email');
+  describe(`POST ${API_BASE_PATH}/register`, () => {
+    it('should register a new user', async () => {
+      const res = await request(app).post(`${API_BASE_PATH}/register`).send({
+        email,
+        password,
+        name: 'Test',
+      });
 
-            expect(res.body.email).toBe("test@test.com");
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty('id');
+      expect(res.body).toHaveProperty('email');
 
-            const user = await prisma.user.findUnique({ where: { email } });
-            expect(user).not.toBeNull();
-        });
+      expect(res.body.email).toBe('test@test.com');
 
-        it('should return 400 for duplicate email', async () => {
-            const res = await request(app)
-                .post(`${API_BASE_PATH}/register`)
-                .send({
-                    email,
-                    password,
-                });
-        
-            expect(res.status).toBe(400);
-        });
+      const user = await prisma.user.findUnique({ where: { email } });
+      expect(user).not.toBeNull();
     });
 
-    describe(`POST ${API_BASE_PATH}/login`, () => {
-        it('should login a user and return a token', async () => {
-            const res = await request(app)
-                .post(`${API_BASE_PATH}/login`)
-                .send({
-                    email,
-                    password
-                });
+    it('should return 400 for duplicate email', async () => {
+      const res = await request(app).post(`${API_BASE_PATH}/register`).send({
+        email,
+        password,
+      });
 
-            expect(res.status).toBe(200);
-            expect(res.body).toHaveProperty('token');
-        });
+      expect(res.status).toBe(400);
+    });
+  });
 
-        it('should return 401 for invalid credentials', async () => {
-            const res = await request(app)
-                .post(`${API_BASE_PATH}/login`)
-                .send({
-                    email,
-                    password: 'passwordWrong',
-                });
-        
-            expect(res.status).toBe(401);
-        });
+  describe(`POST ${API_BASE_PATH}/login`, () => {
+    it('should login a user and return a token', async () => {
+      const res = await request(app).post(`${API_BASE_PATH}/login`).send({
+        email,
+        password,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('token');
     });
 
+    it('should return 401 for invalid credentials', async () => {
+      const res = await request(app).post(`${API_BASE_PATH}/login`).send({
+        email,
+        password: 'passwordWrong',
+      });
+
+      expect(res.status).toBe(401);
+    });
+  });
 });
-

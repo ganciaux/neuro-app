@@ -5,6 +5,7 @@ import { logger } from '../logger/logger';
 import { UserCreateSchema } from '../schemas/user.schema';
 import { UserCreateDTO } from '../dtos/user.dto';
 import { APP_ENV } from '../config/environment';
+import { createUser } from '../services/user.service';
 
 const prisma = new PrismaClient();
 
@@ -20,7 +21,7 @@ export const getProfile = async (request: Request, response: Response) => {
     }
     response.json(user);
   } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error)
+    logger.error(`[req:${request.requestId}]:`, error);
     response.status(500).json({ message: 'Erreur serveur' });
   }
 };
@@ -35,7 +36,7 @@ export async function getUserById(request: Request, response: Response) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId  },
+      where: { id: userId },
       select: { id: true, email: true, createdAt: true },
     });
 
@@ -46,8 +47,8 @@ export async function getUserById(request: Request, response: Response) {
 
     response.json(user);
   } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error)
-    response.status(500).json({error: 'Server error'});
+    logger.error(`[req:${request.requestId}]:`, error);
+    response.status(500).json({ error: 'Server error' });
   }
 }
 
@@ -58,38 +59,37 @@ export const getAllUsers = async (request: Request, response: Response) => {
     });
     response.json(users);
   } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error)
+    logger.error(`[req:${request.requestId}]:`, error);
     response.status(500).json({ message: 'Server error' });
   }
 };
 
-export const createUser = async (request: Request, response: Response) => {
+export const createUserHandler = async (
+  request: Request,
+  response: Response,
+) => {
   try {
     const validatedData = UserCreateSchema.parse(request.body);
-    const { email, password, name, role }:UserCreateDTO = validatedData;
-    const existingUser = await prisma.user.findUnique({where: { email }});
+    const { email, password, name, role }: UserCreateDTO = validatedData;
 
-    if (existingUser) {
+    const user = await createUser(email, password, name, role);
+
+    if (!user) {
       response.status(400).json({ message: 'Cet email est déjà utilisé' });
       return;
     }
 
-    const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash: hashedPassword,
-        passwordSalt: salt,
-        name,
-        role,
-      },
-      select: { id: true, email: true, name: true, role: true },
+    response.status(201).json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
     });
-
-    response.status(201).json(user);
   } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error)
+    // Logger l'erreur
+    logger.error(`[req:${request.requestId}]:`, error);
+
+    // Retourner une erreur serveur
     response.status(500).json({ message: 'Erreur serveur' });
   }
 };
@@ -111,7 +111,7 @@ export const updateUser = async (request: Request, response: Response) => {
 
     response.json(user);
   } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error)
+    logger.error(`[req:${request.requestId}]:`, error);
     response.status(500).json({ message: 'Erreur serveur' });
   }
 };
@@ -133,7 +133,7 @@ export const deleteUser = async (request: Request, response: Response) => {
 
     response.status(204).send();
   } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error)
+    logger.error(`[req:${request.requestId}]:`, error);
     response.status(500).json({ message: 'Erreur serveur' });
   }
 };
