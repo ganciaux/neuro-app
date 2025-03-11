@@ -3,13 +3,14 @@ import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import {app, server} from '../index';
 import { UserAuth, UserRole } from '../models/user.model';
+import { logger } from '../logger/logger';
 
 const prisma = new PrismaClient();
 
 const PASSWORD_SALT_ROUNDS = 10;
 
 beforeAll(async () => {
-  console.log('🛠️ Setting up before all tests...');
+  logger.info('🛠️ Setting up before all tests...');
   await prisma.$connect();
   await cleanupDatabase();
   await setupDatabase();
@@ -20,7 +21,7 @@ beforeEach(async () => {});
 afterEach(async () => {});
 
 afterAll(async () => {
-  console.log('🔌 disconnect and close...');
+  logger.info('🔌 disconnect and close...');
   await prisma.$disconnect();
   server.close();
 });

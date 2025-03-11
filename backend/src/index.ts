@@ -1,13 +1,14 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import routes from './routes';
 import listEndpoints from 'express-list-endpoints'
+import routes from './routes';
+import { logger } from './logger/logger';
 
 dotenv.config();
 
 const PORT = process.env.PORT || '3000';
-const ENV = process.env.ENV || 'example'
+const NODE_ENV = process.env.NODE_ENV || 'dev'
 const app = express();
 const prisma = new PrismaClient();
 
@@ -15,7 +16,7 @@ app.use(express.json());
 
 app.use(routes);
 
-if (ENV==="dev"){
+if (NODE_ENV==="dev"){
     app.get('/routes', (req, res) => {
         const endpoints = listEndpoints(app);
         res.json(endpoints);
@@ -24,14 +25,17 @@ if (ENV==="dev"){
 
 prisma.$connect()
     .then(() => {
-        console.log(process.env.ENV_LABEL)
-        console.log('✅ Connected to PostgreSQL')
+        logger.info(process.env.NODE_ENV_LABEL)
+        logger.info('✅ Connected to PostgreSQL')
 
     })
-    .catch((err) => console.error('❌ Database connection error:', err));
+    .catch((err) => {
+        logger.error('❌ Database connection error:', err)
+        process.exit(1);
+    });
 
 const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Server is running on port ${PORT}`);
 });
 
 export { app, server };

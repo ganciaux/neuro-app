@@ -24,7 +24,7 @@ export async function authGuard(
   const token = request.headers.authorization?.split(' ')[1];
 
   if (!token) {
-    response.status(401).json({ error: 'Access denied' });
+    response.status(401).json({ error: 'Access denied: No token provided' });
     return;
   }
 
@@ -36,13 +36,16 @@ export async function authGuard(
     });
 
     if (!user) {
-      response.status(401).json({ error: 'Invalid token' });
+      response.status(401).json({ error: 'Invalid token: User not found' });
       return;
     }
 
     request.user = user;
     next();
   } catch (error) {
+    if ((error as Error).name === 'TokenExpiredError') {
+      response.status(401).json({ error: 'Token expired' });
+    }
     response.status(401).json({ error: 'Invalid token' });
   }
 }

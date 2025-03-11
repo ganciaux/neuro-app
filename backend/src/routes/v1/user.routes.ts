@@ -15,7 +15,6 @@ router.get('/me', authGuard, getProfile);
 router.get('/:id', authGuard, getUserById);
 router.get('/', authGuard, adminGuard, getAllUsers);
 
-// Nouvelles routes
 router.post('/', authGuard, adminGuard, createUser);
 router.put('/:id', authGuard, adminGuard, updateUser);
 router.delete('/:id', authGuard, adminGuard, deleteUser);
