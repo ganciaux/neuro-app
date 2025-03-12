@@ -9,7 +9,7 @@ import { generateToken } from '../services/auth.service';
 const prisma = new PrismaClient();
 
 beforeAll(async () => {
-  logger.info('🛠️ Setting up before all tests...');
+  logger.info('JEST: setup: 🛠️ Setting up before all tests');
   await prisma.$connect();
   await cleanupDatabase();
   await setupDatabase();
@@ -20,7 +20,7 @@ beforeEach(async () => {});
 afterEach(async () => {});
 
 afterAll(async () => {
-  logger.info('🔌 disconnect and close...');
+  logger.info('JEST: setup:🔌 disconnect and close');
   await prisma.$disconnect();
   server.close();
 });

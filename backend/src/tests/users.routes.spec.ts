@@ -9,7 +9,7 @@ import { deleteUser } from '../services/user.service';
 const prisma = new PrismaClient();
 const API_BASE_PATH = '/api/v1/users';
 
-logger.info('🪪 User Routes');
+logger.info('JEST: users.routes.spec: 🪪 User Routes');
 
 describe.skip('User Routes', () => {
   describe(`GET ${API_BASE_PATH}/me`, () => {
@@ -141,11 +141,9 @@ describe.skip('User Routes', () => {
         UserRole.USER,
         false,
       );
-      logger.info('create temp user...', user);
     });
 
     afterEach(async () => {
-      logger.info('delete temp user...', user);
       await deleteUser(user.user.id);
     });
 

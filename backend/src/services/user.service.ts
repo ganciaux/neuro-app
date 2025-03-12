@@ -1,10 +1,15 @@
 import { UserRole } from '../models/user.model';
 import bcrypt from 'bcryptjs';
 import { PrismaClient, User } from '@prisma/client';
-import { logger } from '../logger/logger';
 import { APP_ENV } from '../config/environment';
+import { EmailAlreadyExistsError } from '../errors/auth.errors';
 
 const prisma = new PrismaClient();
+
+export async function userExists(email: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  return !!user;
+}
 
 export async function createUser(
   email: string,
@@ -12,10 +17,9 @@ export async function createUser(
   name: string = 'name',
   role: UserRole = UserRole.USER,
 ): Promise<User | null> {
-  const existingUser = await prisma.user.findUnique({ where: { email } });
 
-  if (existingUser) {
-    return null;
+  if (await userExists(email)) {
+    throw new EmailAlreadyExistsError();
   }
 
   const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);

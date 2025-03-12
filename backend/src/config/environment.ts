@@ -9,7 +9,7 @@ interface AppEnv {
   LOGGER_LEVEL: string;
   PASSWORD_SALT_ROUNDS: number;
   JWT_SECRET: string;
-  JWT_EXPIRATION: string;
+  JWT_EXPIRATION: number;
   DATABASE_URL: string;
 }
 
@@ -20,7 +20,7 @@ export const APP_ENV: AppEnv = {
   LOGGER_LEVEL: process.env.LOGGER_LEVEL || 'info',
   PASSWORD_SALT_ROUNDS: parseInt(process.env.PASSWORD_SALT_ROUNDS || '10', 10),
   JWT_SECRET: process.env.JWT_SECRET || 'supersecretkey',
-  JWT_EXPIRATION: process.env.JWT_EXPIRATION || '1h',
+  JWT_EXPIRATION: parseInt(process.env.JWT_EXPIRATION || '3600', 10),
   DATABASE_URL: process.env.DATABASE_URL || '',
 };
 

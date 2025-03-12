@@ -1,103 +1,79 @@
-import { request, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 import { logger } from '../logger/logger';
 import { UserCreateSchema } from '../schemas/user.schema';
 import { UserCreateDTO } from '../dtos/user.dto';
-import { APP_ENV } from '../config/environment';
 import { createUser } from '../services/user.service';
+import { asyncHandler } from '../middlewares/asyncHandler.middleware';
+import { AppError } from '../errors/app.error';
 
 const prisma = new PrismaClient();
 
-export const getProfile = async (request: Request, response: Response) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: request.user?.id },
-      select: { id: true, email: true, name: true, role: true },
-    });
-    if (!user) {
-      response.status(404).json({ message: 'Utilisateur non trouvé' });
-      return;
-    }
-    response.json(user);
-  } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error);
-    response.status(500).json({ message: 'Erreur serveur' });
+export const getProfile = asyncHandler(async (request: Request, response: Response) => {
+  logger.info(`[req:${request.requestId}]: getProfile`);
+  const user = await prisma.user.findUnique({
+    where: { id: request.user?.id },
+    select: { id: true, email: true, name: true, role: true },
+  });
+  if (!user) {
+    throw new AppError('User not found', 404);
   }
-};
+  response.json(user);
+});
 
-export async function getUserById(request: Request, response: Response) {
+export const getUserById = asyncHandler(async (request: Request, response: Response) => {
+  logger.info(`[req:${request.requestId}]: getUserById`);
   const userId = request.params.id;
 
   if (!userId.match(/^[0-9a-fA-F-]{36}$/)) {
-    response.status(400).json({ error: 'Invalid user ID format' });
-    return;
+    throw new AppError('Invalid user ID format', 404);
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, createdAt: true },
+  });
+
+  if (!user) {
+    throw new AppError('User not found', 404);
   }
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, createdAt: true },
-    });
+  response.json(user);
+});
 
-    if (!user) {
-      response.status(404).json({ error: 'Utilisateur non trouvé' });
-      return;
-    }
+export const getAllUsers = asyncHandler(async (request: Request, response: Response) => {
+  logger.info(`[req:${request.requestId}]: getAllUsers`);
+  const users = await prisma.user.findMany({
+    select: { id: true, email: true, name: true, role: true },
+  });
+  response.json(users);
+});
 
-    response.json(user);
-  } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error);
-    response.status(500).json({ error: 'Server error' });
-  }
-}
-
-export const getAllUsers = async (request: Request, response: Response) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: { id: true, email: true, name: true, role: true },
-    });
-    response.json(users);
-  } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error);
-    response.status(500).json({ message: 'Server error' });
-  }
-};
-
-export const createUserHandler = async (
+export const createUserHandler = asyncHandler(async (
   request: Request,
   response: Response,
 ) => {
-  try {
-    const validatedData = UserCreateSchema.parse(request.body);
-    const { email, password, name, role }: UserCreateDTO = validatedData;
+  logger.info(`[req:${request.requestId}]: createUserHandler`);
+  const validatedData = UserCreateSchema.parse(request.body);
+  const { email, password, name, role }: UserCreateDTO = validatedData;
 
-    const user = await createUser(email, password, name, role);
+  const user = await createUser(email, password, name, role);
 
-    if (!user) {
-      response.status(400).json({ message: 'Cet email est déjà utilisé' });
-      return;
-    }
-
-    response.status(201).json({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    });
-  } catch (error) {
-    // Logger l'erreur
-    logger.error(`[req:${request.requestId}]:`, error);
-
-    // Retourner une erreur serveur
-    response.status(500).json({ message: 'Erreur serveur' });
+  if (!user) {
+    throw new AppError(`Can't create user`, 400);
   }
-};
 
-export const updateUser = async (request: Request, response: Response) => {
-  try {
-    const { name, email, role } = request.body;
-    const userId = request.params.id;
+  response.status(201).json({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  });
+});
+
+export const updateUser = asyncHandler(async (request: Request, response: Response) => {
+  logger.info(`[req:${request.requestId}]: updateUser`);
+  const { name, email, role } = request.body;
+  const userId = request.params.id;
 
     const user = await prisma.user.update({
       where: { id: userId },
@@ -109,31 +85,30 @@ export const updateUser = async (request: Request, response: Response) => {
       select: { id: true, email: true, name: true, role: true },
     });
 
-    response.json(user);
-  } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error);
-    response.status(500).json({ message: 'Erreur serveur' });
-  }
-};
+    if (!user) {
+      throw new AppError(`Can't update user`, 400);
+    }
 
-export const deleteUser = async (request: Request, response: Response) => {
-  try {
-    const userId = request.params.id;
+    response.json(user);
+});
+
+export const deleteUser = asyncHandler(async (request: Request, response: Response) => {
+  logger.info(`[req:${request.requestId}]: deleteUser`);
+  const userId = request.params.id;
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      response.status(404).json({ error: 'Utilisateur non trouvé' });
-      return;
+      throw new AppError('User not found', 404);
     }
 
-    await prisma.user.delete({
+    const userDeleted = await prisma.user.delete({
       where: { id: userId },
     });
 
+    if (!userDeleted) {
+      throw new AppError(`Can't delete user`, 400);
+    }
+
     response.status(204).send();
-  } catch (error) {
-    logger.error(`[req:${request.requestId}]:`, error);
-    response.status(500).json({ message: 'Erreur serveur' });
-  }
-};
+});

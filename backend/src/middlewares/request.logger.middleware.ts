@@ -13,24 +13,22 @@ export function requestLogger(
     try {
       const duration = Date.now() - start;
       const requestId = request.requestId || '<none>';
-      logger.info(`Request [${requestId}]: duration=${duration}ms`);
-      logger.info(`Request [${requestId}]: statusCode=${response.statusCode}`);
+      logger.info(`[${requestId}]: duration=${duration}ms`);
+      logger.info(`[${requestId}]: statusCode=${response.statusCode}`);
       logger.info(
         `Request [${requestId}]: headers=${JSON.stringify(maskSensitiveHeaders(request.headers))}`,
       );
       logger.info(
-        `Request [${requestId}]: body=${JSON.stringify(maskSensitiveData(request.body))}`,
+        `[${requestId}]: body=${JSON.stringify(maskSensitiveData(request.body))}`,
       );
-      logger.info(`Request [${requestId}]: end`);
     } catch (error) {
-      logger.error('Erreur lors du logging de la requête :', error);
+      logger.error(`Can't log request ${JSON.stringify(error)}`);
     }
   });
 
   next();
 }
 
-// Fonction pour masquer les en-têtes sensibles
 function maskSensitiveHeaders(
   headers: Record<string, string | string[] | undefined>,
 ): Record<string, string | string[] | undefined> {

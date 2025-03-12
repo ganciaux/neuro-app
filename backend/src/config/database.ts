@@ -6,9 +6,9 @@ export const prisma = new PrismaClient();
 export async function connectToDatabase() {
   try {
     await prisma.$connect();
-    logger.info('✅ Connected to PostgreSQL');
+    logger.info('database: ✅ Connected to PostgreSQL');
   } catch (err) {
-    logger.error('❌ Database connection error:', err);
+    logger.error('database: ❌ Database connection error:', err);
     process.exit(1);
   }
 }
