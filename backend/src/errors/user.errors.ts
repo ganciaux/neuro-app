@@ -7,9 +7,15 @@ export class UserCreationFailedError extends AppError {
   }
 }
 
-export class UserNotFoundError extends AppError {
+export class UserNotFoundEmailError extends AppError {
   constructor(email: string, message: string = "User not found") {
     super(message, 404); // 404 Not Found
     this.message = `User not found ${email}`;
+  }
+}
+
+export class UserNotFoundError extends AppError {
+  constructor(message: string = "User not found") {
+    super(message, 404); // 404 Not Found
   }
 }
