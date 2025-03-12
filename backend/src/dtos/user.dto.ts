@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { UserLoginSchema, UserRegisterSchema, UserCreateSchema } from '../schemas/user.schema';
+import {
+  UserLoginSchema,
+  UserRegisterSchema,
+  UserCreateSchema,
+} from '../schemas/user.schema';
 
 export type UserRegisterDTO = z.infer<typeof UserRegisterSchema>;
 

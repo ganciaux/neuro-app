@@ -24,7 +24,6 @@ export const APP_ENV: AppEnv = {
   DATABASE_URL: process.env.DATABASE_URL || '',
 };
 
-// Validation des variables critiques en production
 if (APP_ENV.NODE_ENV === 'production') {
   if (!process.env.JWT_SECRET) {
     throw new Error(

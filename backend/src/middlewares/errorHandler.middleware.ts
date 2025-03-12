@@ -2,13 +2,18 @@ import { Request, Response, NextFunction } from 'express';
 import { logger } from '../logger/logger';
 import { AppError } from '../errors/app.error';
 import { APP_ENV } from '../config/environment';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { ZodError } from 'zod';
+import { PrismaError } from '../errors/prisma.errors';
 
 const prisma = new PrismaClient();
 
 export function handleProcessErrors() {
   process.on('uncaughtException', (error) => {
-    logger.error('Uncaught Exception:', { error: error.message, stack: error.stack });
+    logger.error('Uncaught Exception:', {
+      error: error.message,
+      stack: error.stack,
+    });
     process.exit(1);
   });
 
@@ -27,26 +32,17 @@ export function handleProcessErrors() {
   });
 }
 
-export const handleJWTError = () =>
-  new AppError('Invalid token. Please login again', 401);
-
-export const handleJWTExpiredError = () =>
-  new AppError('Invalid token. Your token has expired', 401);
-
-export const handlePrismaUniqueConstraintViolation = (err:Prisma.PrismaClientKnownRequestError) =>
-  new AppError('Cant insert value', 400);
-
 const sendErrorDev = (error: Error, request: Request, response: Response) => {
   logger.error(`errorHandler: [${request.requestId}]: sendErrorDev: ${error}`);
   let { status, statusCode } = error as any;
 
-    response.status(statusCode ?? 500).json({
-      status: status ?? 'error',
-      message: error.message,
-      stack: error.stack,
-      error
-    });
-}
+  response.status(statusCode ?? 500).json({
+    status: status ?? 'error',
+    message: error.message,
+    stack: error.stack,
+    error,
+  });
+};
 
 const sendErrorProd = (error: Error, request: Request, response: Response) => {
   logger.error(`errorHandler: [${request.requestId}]: sendErrorProd: ${error}`);
@@ -56,21 +52,32 @@ const sendErrorProd = (error: Error, request: Request, response: Response) => {
   });
 };
 
-export const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {
-
+export const errorHandler = (
+  error: Error,
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) => {
   logger.error(`errorHandler: [${request.requestId}]: ${error}`);
-  
-  if (APP_ENV.NODE_ENV === "dev") {
-    sendErrorDev(error, request, response);
-  } else{
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        handlePrismaUniqueConstraintViolation(error);
-        return;
-      }
-    }
 
-    sendErrorProd(error, request, response);
+  if (APP_ENV.NODE_ENV === 'dev') {
+    sendErrorDev(error, request, response);
+  } else {
+    if (error instanceof ZodError) {
+      response.status(400).json({
+        status: 'fail',
+        message: 'Validation error',
+        errors: error.errors,
+      });
+    } else if (error instanceof PrismaError) {
+      response.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+        prismaCode: error.prismaCode,
+      });
+
+      sendErrorProd(error, request, response);
+    }
   }
 
   next();

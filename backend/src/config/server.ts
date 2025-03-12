@@ -5,7 +5,10 @@ import { requestLogger } from '../middlewares/request.logger.middleware';
 import routes from '../routes';
 import { APP_ENV } from './environment';
 import { requestIdMiddleware } from '../middlewares/request.id.middleware';
-import { errorHandler, handleProcessErrors } from '../middlewares/errorHandler.middleware';
+import {
+  errorHandler,
+  handleProcessErrors,
+} from '../middlewares/errorHandler.middleware';
 
 const app = express();
 
@@ -18,7 +21,7 @@ export function setupExpress() {
   app.use(routes);
   app.use(errorHandler);
 
-  if (APP_ENV.NODE_ENV === "dev") {
+  if (APP_ENV.NODE_ENV === 'dev') {
     app.get('/routes', (req, res) => {
       res.json(listEndpoints(app));
     });

@@ -3,10 +3,16 @@ import jwt from 'jsonwebtoken';
 import { User, UserRole, UserJWT } from '../models/user.model';
 import { PrismaClient } from '@prisma/client';
 import { APP_ENV } from '../config/environment';
+import {
+  JWTExpiredError,
+  JWTInvalidError,
+  JWTNotProvidedError,
+  RoleAccessRequiredError,
+} from '../errors/auth.errors';
+import { asyncHandler } from './asyncHandler.middleware';
 
 const prisma = new PrismaClient();
 
-// Extend the Request type to include the user property
 declare global {
   namespace Express {
     interface Request {
@@ -15,48 +21,41 @@ declare global {
   }
 }
 
-export async function authGuard(
-  request: Request,
-  response: Response,
-  next: NextFunction,
-) {
-  const token = request.headers.authorization?.split(' ')[1];
+export const authGuard = asyncHandler(
+  async (request: Request, response: Response, next: NextFunction) => {
+    const token = request.headers.authorization?.split(' ')[1];
 
-  if (!token) {
-    response.status(401).json({ error: 'Access denied: No token provided' });
-    return;
-  }
-
-  try {
-    const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWT;
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.sub },
-    });
-
-    if (!user) {
-      response.status(401).json({ error: 'Invalid token: User not found' });
-      return;
+    if (!token) {
+      throw new JWTNotProvidedError();
     }
 
-    request.user = user;
+    try {
+      const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWT;
+
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.sub },
+      });
+
+      if (!user) {
+        throw new JWTInvalidError();
+      }
+
+      request.user = user;
+      next();
+    } catch (error) {
+      if ((error as Error).name === 'TokenExpiredError') {
+        throw new JWTExpiredError();
+      }
+      throw new JWTInvalidError();
+    }
+  },
+);
+
+export const adminGuard = asyncHandler(
+  (request: Request, response: Response, next: NextFunction) => {
+    if (request.user?.role !== UserRole.ADMIN) {
+      throw new RoleAccessRequiredError();
+    }
     next();
-  } catch (error) {
-    if ((error as Error).name === 'TokenExpiredError') {
-      response.status(401).json({ error: 'Token expired' });
-    }
-    response.status(401).json({ error: 'Invalid token' });
-  }
-}
-
-export function adminGuard(
-  request: Request,
-  response: Response,
-  next: NextFunction,
-) {
-  if (request.user?.role != UserRole.ADMIN) {
-    response.status(403).json({ message: 'Admin access required' });
-    return;
-  }
-  next();
-}
+  },
+);

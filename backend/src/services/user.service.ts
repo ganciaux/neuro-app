@@ -1,10 +1,14 @@
 import { UserRole } from '../models/user.model';
 import bcrypt from 'bcryptjs';
-import { PrismaClient, User } from '@prisma/client';
+import { Prisma, PrismaClient, User } from '@prisma/client';
 import { APP_ENV } from '../config/environment';
-import { EmailAlreadyExistsError, UserDeletionFailedError } from '../errors/auth.errors';
-import { logger } from '../logger/logger';
-import { UserCreationFailedError, UserNotFoundError } from '../errors/user.errors';
+import { EmailAlreadyExistsError } from '../errors/auth.errors';
+import {
+  UserCreationFailedError,
+  UserDeletionFailedError,
+  UserNotFoundError,
+} from '../errors/user.errors';
+import { PrismaError } from '../errors/prisma.errors';
 
 const prisma = new PrismaClient();
 
@@ -18,15 +22,54 @@ export async function userExistsById(id: string): Promise<boolean> {
   return !!user;
 }
 
+export async function findUserById(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  return user;
+}
+
+export async function findUserByEmail(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  return user;
+}
+
+export async function findUserByIdWithSelect(
+  userId: string,
+  select: Record<string, boolean>,
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select,
+  });
+
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  return user;
+}
+
 export async function createUser(
   email: string,
   password: string,
   name: string = 'name',
   role: UserRole = UserRole.USER,
 ): Promise<User | null> {
-
   if (await userExists(email)) {
-    throw new EmailAlreadyExistsError();
+    throw new EmailAlreadyExistsError(email);
   }
 
   const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);
@@ -45,8 +88,11 @@ export async function createUser(
 
     return user;
   } catch (error) {
-    logger.error(`Failed to create user: ${error}`);
-    throw new UserCreationFailedError(email);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new PrismaError('Database error', error.code, 400);
+    } else {
+      throw new UserCreationFailedError(email);
+    }
   }
 }
 
@@ -54,15 +100,16 @@ export async function deleteUser(userId: string): Promise<User | null> {
   if (await userExistsById(userId)) {
     throw new UserNotFoundError(userId);
   }
-
   try {
-    // Supprimer l'utilisateur
     const deletedUser = await prisma.user.delete({
       where: { id: userId },
     });
     return deletedUser;
   } catch (error) {
-    logger.error(`Failed to delete user: ${error}`);
-    throw new UserDeletionFailedError(userId); // Lever une erreur spécifique
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new PrismaError('Database error', error.code, 400);
+    } else {
+      throw new UserDeletionFailedError(userId);
+    }
   }
 }
