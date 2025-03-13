@@ -1,9 +1,7 @@
 import request from 'supertest';
 import { app } from '../index';
-import { PrismaClient } from '@prisma/client';
 import { logger } from '../logger/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 const API_BASE_PATH = '/api/v1/auth';
 

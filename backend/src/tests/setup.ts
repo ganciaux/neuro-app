@@ -1,12 +1,10 @@
 import request from 'supertest';
-import { PrismaClient, User } from '@prisma/client';
 import { app, server } from '../index';
 import { UserTest, UserRole } from '../models/user.model';
 import { logger } from '../logger/logger';
 import { createUser } from '../services/user.service';
 import { generateToken } from '../services/auth.service';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 beforeAll(async () => {
   logger.info('JEST: setup: 🛠️ Setting up before all tests');

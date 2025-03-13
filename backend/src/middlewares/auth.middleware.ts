@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User, UserRole, UserJWT } from '../models/user.model';
-import { PrismaClient } from '@prisma/client';
 import { APP_ENV } from '../config/environment';
+import { prisma } from '../config/database';
 import {
   JWTExpiredError,
   JWTInvalidError,
@@ -10,8 +10,6 @@ import {
   RoleAccessRequiredError,
 } from '../errors/auth.errors';
 import { asyncHandler } from './asyncHandler.middleware';
-
-const prisma = new PrismaClient();
 
 declare global {
   namespace Express {

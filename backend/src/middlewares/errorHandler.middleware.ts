@@ -1,12 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../logger/logger';
-import { AppError } from '../errors/app.error';
 import { APP_ENV } from '../config/environment';
-import { PrismaClient } from '@prisma/client';
 import { ZodError } from 'zod';
 import { PrismaError } from '../errors/prisma.errors';
-
-const prisma = new PrismaClient();
 
 export function handleProcessErrors() {
   process.on('uncaughtException', (error) => {

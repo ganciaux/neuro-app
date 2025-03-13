@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, User } from '@prisma/client';
 import { APP_ENV } from '../config/environment';
 import { createUser, findUserByEmail } from './user.service';
 import { logger } from '../logger/logger';
@@ -9,8 +8,6 @@ import {
   UserRegisterFailedError,
 } from '../errors/user.errors';
 import { InvalidCredentialsError } from '../errors/auth.errors';
-
-const prisma = new PrismaClient();
 
 export async function registerUser(email: string, password: string) {
   logger.info(`authService: registerUser`);

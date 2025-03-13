@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { logger } from '../logger/logger';
 import { UserCreateSchema } from '../schemas/user.schema';
 import { UserCreateDTO } from '../dtos/user.dto';
@@ -9,15 +8,13 @@ import {
   findUserByIdWithSelect,
 } from '../services/user.service';
 import { asyncHandler } from '../middlewares/asyncHandler.middleware';
-import { AppError } from '../errors/app.error';
 import {
   InvalidUserIdError,
   UserCreationFailedError,
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 export const getProfile = asyncHandler(
   async (request: Request, response: Response) => {

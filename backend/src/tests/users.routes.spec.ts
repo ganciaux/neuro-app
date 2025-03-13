@@ -1,12 +1,11 @@
 import request from 'supertest';
-import { PrismaClient } from '@prisma/client';
 import { app } from '../index';
 import { logger } from '../logger/logger';
 import { createTestUser } from './setup';
 import { UserRole, UserTest } from '../models/user.model';
 import { deleteUser } from '../services/user.service';
+import { prisma } from '../config/database';
 
-const prisma = new PrismaClient();
 const API_BASE_PATH = '/api/v1/users';
 
 logger.info('JEST: users.routes.spec: 🪪 User Routes');

@@ -1,6 +1,6 @@
 import { UserRole } from '../models/user.model';
 import bcrypt from 'bcryptjs';
-import { Prisma, PrismaClient, User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { APP_ENV } from '../config/environment';
 import { EmailAlreadyExistsError } from '../errors/auth.errors';
 import {
@@ -9,8 +9,7 @@ import {
   UserNotFoundError,
 } from '../errors/user.errors';
 import { PrismaError } from '../errors/prisma.errors';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 export async function userExists(email: string): Promise<boolean> {
   const user = await prisma.user.findUnique({ where: { email } });
