@@ -12,6 +12,6 @@ export class AppError extends Error {
     this.isOperational = true;
 
     Error.captureStackTrace(this, this.constructor);
-    logger.error(`appError: ${this}`);
+    logger.error(`app.error: constructor: ${this}`);
   }
 }

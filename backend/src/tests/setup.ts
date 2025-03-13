@@ -7,7 +7,7 @@ import { generateToken } from '../services/auth.service';
 import { prisma } from '../config/database';
 
 beforeAll(async () => {
-  logger.info('JEST: setup: 🛠️ Setting up before all tests');
+  logger.info('setup: JEST: 🛠️ Setting up before all tests');
   await prisma.$connect();
   await cleanupDatabase();
   await setupDatabase();
@@ -18,7 +18,7 @@ beforeEach(async () => {});
 afterEach(async () => {});
 
 afterAll(async () => {
-  logger.info('JEST: setup:🔌 disconnect and close');
+  logger.info('setup: JEST: 🔌 disconnect and close');
   await prisma.$disconnect();
   server.close();
 });

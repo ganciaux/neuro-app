@@ -4,13 +4,14 @@ import { UserCreateSchema } from '../schemas/user.schema';
 import { UserCreateDTO } from '../dtos/user.dto';
 import {
   createUser,
-  findUserById,
+  deleteUser,
+  findAllUsers,
   findUserByIdWithSelect,
+  isValidUserId,
 } from '../services/user.service';
 import { asyncHandler } from '../middlewares/asyncHandler.middleware';
 import {
   InvalidUserIdError,
-  UserCreationFailedError,
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
@@ -18,30 +19,14 @@ import { prisma } from '../config/database';
 
 export const getProfile = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(`[req:${request.requestId}]: getProfile`);
+    logger.info(`user.controller: getProfile: [req:${request.requestId}]: getProfile`);
     const userId = request.user?.id;
 
     if (!userId) {
       throw new UserNotFoundError();
     }
 
-    const user = await findUserByIdWithSelect(userId, {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-    });
-
-    response.json(user);
-  },
-);
-
-export const getUserById = asyncHandler(
-  async (request: Request, response: Response) => {
-    logger.info(`[req:${request.requestId}]: getUserById`);
-    const userId = request.params.id;
-
-    if (!userId.match(/^[0-9a-fA-F-]{36}$/)) {
+    if (!isValidUserId(userId)) {
       throw new InvalidUserIdError();
     }
 
@@ -52,31 +37,53 @@ export const getUserById = asyncHandler(
       role: true,
     });
 
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+
+    response.json(user);
+  },
+);
+
+export const getUserById = asyncHandler(
+  async (request: Request, response: Response) => {
+    logger.info(`user.controller: getUserById: [req:${request.requestId}]: getUserById`);
+    const userId = request.params.id;
+
+    if (!isValidUserId(userId)) {
+      throw new InvalidUserIdError();
+    }
+
+    const user = await findUserByIdWithSelect(userId, {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+    });
+
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+
     response.json(user);
   },
 );
 
 export const getAllUsers = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(`[req:${request.requestId}]: getAllUsers`);
-    const users = await prisma.user.findMany({
-      select: { id: true, email: true, name: true, role: true },
-    });
+    logger.info(`user.controller: getAllUsers: [req:${request.requestId}]: getAllUsers`);
+    const users = await findAllUsers();
     response.json(users);
   },
 );
 
 export const createUserHandler = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(`[req:${request.requestId}]: createUserHandler`);
+    logger.info(`user.controller: createUserHandler: [req:${request.requestId}]: createUserHandler`);
     const validatedData = UserCreateSchema.parse(request.body);
     const { email, password, name, role }: UserCreateDTO = validatedData;
 
     const user = await createUser(email, password, name, role);
-
-    if (!user) {
-      throw new UserCreationFailedError(email);
-    }
 
     response.status(201).json({
       id: user.id,
@@ -87,13 +94,13 @@ export const createUserHandler = asyncHandler(
   },
 );
 
-export const updateUser = asyncHandler(
+export const updateUserHandler = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(`[req:${request.requestId}]: updateUser`);
+    logger.info(`user.controller: updateUser: [req:${request.requestId}]: updateUser`);
     const userId = request.params.id;
     const { name, email, role } = request.body;
 
-    if (!userId.match(/^[0-9a-fA-F-]{36}$/)) {
+    if (!isValidUserId(userId)) {
       throw new InvalidUserIdError();
     }
 
@@ -111,19 +118,12 @@ export const updateUser = asyncHandler(
   },
 );
 
-export const deleteUser = asyncHandler(
+export const deleteUserHandler = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(`[req:${request.requestId}]: deleteUser`);
+    logger.info(`user.controller: deleteUser: [req:${request.requestId}]: deleteUser`);
     const userId = request.params.id;
 
-    if (!userId.match(/^[0-9a-fA-F-]{36}$/)) {
-      throw new InvalidUserIdError();
-    }
-
-    // Vérifie que l'utilisateur existe avant de le supprimer
-    await findUserById(userId);
-
-    await prisma.user.delete({ where: { id: userId } });
+    const user = await deleteUser(userId);
 
     response.status(204).send();
   },

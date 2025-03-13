@@ -10,19 +10,19 @@ export function requestLogger(
   const start = Date.now();
 
   response.on('finish', () => {
+    const duration = Date.now() - start;
+    const requestId = request.requestId || '<none>';
     try {
-      const duration = Date.now() - start;
-      const requestId = request.requestId || '<none>';
-      logger.info(`[${requestId}]: duration=${duration}ms`);
-      logger.info(`[${requestId}]: statusCode=${response.statusCode}`);
+      logger.info(`request.logger.middleware: requestLogger: [${requestId}]: duration=${duration}ms`);
+      logger.info(`request.logger.middleware: requestLogger: [${requestId}]: statusCode=${response.statusCode}`);
       logger.info(
-        `Request [${requestId}]: headers=${JSON.stringify(maskSensitiveHeaders(request.headers))}`,
+        `request.logger.middleware: requestLogger: [${requestId}]: headers=${JSON.stringify(maskSensitiveHeaders(request.headers))}`,
       );
       logger.info(
-        `[${requestId}]: body=${JSON.stringify(maskSensitiveData(request.body))}`,
+        `request.logger.middleware: requestLogger: [${requestId}]: body=${JSON.stringify(maskSensitiveData(request.body))}`,
       );
     } catch (error) {
-      logger.error(`Can't log request ${JSON.stringify(error)}`);
+      logger.error(`request.logger.middleware: requestLogger: [${requestId}]: Can't log request ${JSON.stringify(error)}`);
     }
   });
 

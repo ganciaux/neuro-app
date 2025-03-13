@@ -4,8 +4,8 @@ import {
   getAllUsers,
   getUserById,
   createUserHandler,
-  updateUser,
-  deleteUser,
+  updateUserHandler,
+  deleteUserHandler,
 } from '../../controllers/user.controller';
 import { adminGuard, authGuard } from '../../middlewares/auth.middleware';
 
@@ -16,7 +16,7 @@ router.get('/:id', authGuard, adminGuard, getUserById);
 router.get('/', authGuard, adminGuard, getAllUsers);
 
 router.post('/', authGuard, adminGuard, createUserHandler);
-router.put('/:id', authGuard, adminGuard, updateUser);
-router.delete('/:id', authGuard, adminGuard, deleteUser);
+router.put('/:id', authGuard, adminGuard, updateUserHandler);
+router.delete('/:id', authGuard, adminGuard, deleteUserHandler);
 
 export default router;

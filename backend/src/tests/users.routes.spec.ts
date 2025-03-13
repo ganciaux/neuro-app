@@ -8,7 +8,7 @@ import { prisma } from '../config/database';
 
 const API_BASE_PATH = '/api/v1/users';
 
-logger.info('JEST: users.routes.spec: 🪪 User Routes');
+logger.info('users.routes.spec: JEST: 🪪 User Routes');
 
 describe.skip('User Routes', () => {
   describe(`GET ${API_BASE_PATH}/me`, () => {

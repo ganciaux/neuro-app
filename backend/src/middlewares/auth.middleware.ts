@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User, UserRole, UserJWT } from '../models/user.model';
 import { APP_ENV } from '../config/environment';
-import { prisma } from '../config/database';
 import {
   JWTExpiredError,
   JWTInvalidError,
@@ -10,6 +9,8 @@ import {
   RoleAccessRequiredError,
 } from '../errors/auth.errors';
 import { asyncHandler } from './asyncHandler.middleware';
+import { findUserById, isValidUserId } from '../services/user.service';
+import { InvalidUserIdError } from '../errors/user.errors';
 
 declare global {
   namespace Express {
@@ -30,9 +31,11 @@ export const authGuard = asyncHandler(
     try {
       const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWT;
 
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.sub },
-      });
+      if (!isValidUserId(decoded.sub)) {
+        throw new InvalidUserIdError();
+      }
+
+      const user = await findUserById(decoded.sub);
 
       if (!user) {
         throw new JWTInvalidError();

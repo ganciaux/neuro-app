@@ -32,9 +32,9 @@ export class EmailAlreadyExistsError extends AppError {
 }
 
 export class InvalidCredentialsError extends AppError {
-  constructor(email: string, message: string = 'Invalid credentials') {
+  constructor(message: string = 'Invalid credentials') {
     super(message, 401); // 401 Unauthorized
-    this.message = `Invalid credentials ${email}`;
+    this.message = `Invalid credentials`;
   }
 }
 

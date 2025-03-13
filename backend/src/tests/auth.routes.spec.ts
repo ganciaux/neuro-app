@@ -5,7 +5,7 @@ import { prisma } from '../config/database';
 
 const API_BASE_PATH = '/api/v1/auth';
 
-logger.info('JEST: aut.routes.spec: 🛡️ Auth Routes');
+logger.info('aut.routes.spec: JEST: 🛡️ Auth Routes');
 
 describe('Auth Routes', () => {
   let email: string;

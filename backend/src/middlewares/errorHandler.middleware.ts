@@ -6,7 +6,7 @@ import { PrismaError } from '../errors/prisma.errors';
 
 export function handleProcessErrors() {
   process.on('uncaughtException', (error) => {
-    logger.error('Uncaught Exception:', {
+    logger.error('errorHandler: handleProcessErrors: Uncaught Exception:', {
       error: error.message,
       stack: error.stack,
     });
@@ -14,22 +14,22 @@ export function handleProcessErrors() {
   });
 
   process.on('unhandledRejection', (reason) => {
-    logger.error('Unhandled Promise Rejection:', { reason });
+    logger.error('errorHandler: handleProcessErrors: Unhandled Promise Rejection:', { reason });
   });
 
   process.on('SIGINT', async () => {
-    logger.info(`errorHandler: 🛑 SIGINT received. Closing server...`);
+    logger.info(`errorHandler: handleProcessErrors: 🛑 SIGINT received. Closing server...`);
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
-    logger.info(`errorHandler: 🛑 SIGTERM received. Closing server...`);
+    logger.info(`errorHandler: handleProcessErrors: 🛑 SIGTERM received. Closing server...`);
     process.exit(0);
   });
 }
 
 const sendErrorDev = (error: Error, request: Request, response: Response) => {
-  logger.error(`errorHandler: [${request.requestId}]: sendErrorDev: ${error}`);
+  logger.error(`errorHandler: sendErrorDev: [${request.requestId}]: sendErrorDev:`);
   let { status, statusCode } = error as any;
 
   response.status(statusCode ?? 500).json({
@@ -41,7 +41,7 @@ const sendErrorDev = (error: Error, request: Request, response: Response) => {
 };
 
 const sendErrorProd = (error: Error, request: Request, response: Response) => {
-  logger.error(`errorHandler: [${request.requestId}]: sendErrorProd: ${error}`);
+  logger.error(`errorHandler: sendErrorProd: [${request.requestId}]: sendErrorProd:`);
   response.status(500).json({
     status: 'error',
     message: 'Something went very wrong!',
@@ -54,7 +54,7 @@ export const errorHandler = (
   response: Response,
   next: NextFunction,
 ) => {
-  logger.error(`errorHandler: [${request.requestId}]: ${error}`);
+  logger.error(`errorHandler: errorHandler: [${request.requestId}]: ${error}`);
 
   if (APP_ENV.NODE_ENV === 'dev') {
     sendErrorDev(error, request, response);
