@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { app, server } from '../index';
-import { UserTest, UserRole } from '../models/user.model';
+import { UserTestData, UserRole } from '../models/user.model';
 import { logger } from '../logger/logger';
 import { createUser } from '../services/user.service';
 import { generateToken } from '../services/auth.service';
@@ -29,7 +29,7 @@ export async function createTestUser(
   name: string = 'name',
   role: UserRole = UserRole.USER,
   token: boolean = true,
-): Promise<UserTest> {
+): Promise<UserTestData> {
   let authToken: string = '';
   const user = await createUser(email, password, name, role);
 

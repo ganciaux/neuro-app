@@ -19,6 +19,9 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Docs
+backend/docs/
+
 # TypeScript
 *.tsbuildinfo
 

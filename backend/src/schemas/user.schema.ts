@@ -1,4 +1,3 @@
-// Schéma Zod correspondant
 import { z } from 'zod';
 import { UserRole } from '../models/user.model';
 import { isValidUserId } from '../services/user.service';

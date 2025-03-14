@@ -2,7 +2,7 @@ import request from 'supertest';
 import { app } from '../index';
 import { logger } from '../logger/logger';
 import { createTestUser } from './setup';
-import { UserRole, UserTest } from '../models/user.model';
+import { UserRole, UserTestData } from '../models/user.model';
 import { deleteUser } from '../services/user.service';
 import { prisma } from '../config/database';
 
@@ -130,7 +130,7 @@ describe.skip('User Routes', () => {
   });
 
   describe(`DELETE ${API_BASE_PATH}/:id`, () => {
-    let user: UserTest;
+    let user: UserTestData;
 
     beforeEach(async () => {
       user = await createTestUser(

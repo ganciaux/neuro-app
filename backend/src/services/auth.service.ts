@@ -6,6 +6,9 @@ import { logger } from '../logger/logger';
 import { InvalidCredentialsError } from '../errors/auth.errors';
 import { UserCreationFailedError } from '../errors/user.errors';
 
+/**
+ * Service for authentication.
+ */
 export async function registerUser(email: string, password: string):Promise<{id: string, email: string}> {
   logger.info(`auth.service: registerUser:`);
   

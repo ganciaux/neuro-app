@@ -19,6 +19,9 @@ export function isValidUserId(userId: string): boolean {
   return userId.match(/^[0-9a-fA-F-]{36}$/) !== null;
 }
 
+/**
+ * Service for user management.
+ */
 export async function userExistsByEmail(email: string): Promise<boolean> {
   try {
     const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });

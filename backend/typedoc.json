@@ -1,0 +1,11 @@
+{
+  "entryPoints": ["./src/**/*"],  
+  "out": "docs",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  //"exclude": ["**/node_modules/**", "**/tests/**"],
+  //"readme": "README.md",
+  //"plugin": ["typedoc-plugin-markdown"]
+}

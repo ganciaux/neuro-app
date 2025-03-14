@@ -9,6 +9,7 @@ import {
   errorHandler,
   handleProcessErrors,
 } from '../middlewares/error.handler.middleware';
+import { setupSwagger } from './swagger';
 
 const app = express();
 
@@ -26,6 +27,8 @@ export function setupExpress() {
       res.json(listEndpoints(app));
     });
   }
+
+  setupSwagger(app);
 }
 
 export { app };

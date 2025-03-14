@@ -6,6 +6,9 @@ import { Server } from 'http';
 
 let server: Server;
 
+/**
+ * Starts the server.
+ */
 async function startServer() {
   await connectToDatabase();
   setupExpress();
