@@ -8,7 +8,7 @@ import { requestIdMiddleware } from '../middlewares/request.id.middleware';
 import {
   errorHandler,
   handleProcessErrors,
-} from '../middlewares/errorHandler.middleware';
+} from '../middlewares/error.handler.middleware';
 
 const app = express();
 

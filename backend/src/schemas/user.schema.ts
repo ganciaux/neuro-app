@@ -1,31 +1,51 @@
 // Schéma Zod correspondant
 import { z } from 'zod';
 import { UserRole } from '../models/user.model';
+import { isValidUserId } from '../services/user.service';
 
-const UserRoleSchema = z.nativeEnum(UserRole);
+export const UserRoleSchema = z.nativeEnum(UserRole);
 
-export const UserLoginSchema = z.object({
-  email: z.string().email({ message: 'Adresse mail invalide' }),
-  password: z
-    .string()
-    .min(6, { message: 'Le mot de passe doit avoir au minimun 6 charactères' }),
+export const UserJWTPayloadSchema = z.object({
+  sub: z.string().refine((value) => isValidUserId(value), {
+    message: 'Invalid user ID format.',
+  }),
+  email: z.string().email('Invalid email format.'),
+  role: z.nativeEnum(UserRole, {
+    errorMap: (issue, ctx) => {
+      return { message: "The role must be either 'USER' or 'ADMIN'." };
+    },
+  }),
+  iat: z.number().int('Invalid issued at timestamp.'),
+  exp: z.number().int('Invalid expiration timestamp.'),
 });
 
-export const UserRegisterSchema = z.object({
-  email: z.string().email('Adresse mail invalide'),
+export const UserIdSchema = z.object({
+  userId: z.string().refine((value) => isValidUserId(value), {
+    message: "The user ID must be a valid UUID.",
+  }),
+});
+
+export const UserUpdateSchema = z.object({
+  email: z.string().email('Invalid email format.'),
   password: z
     .string()
-    .min(6, 'Le mot de passe doit avoir au minimun 6 charactères'),
+    .min(6, 'The password must be at least 6 characters long.'),
+  name: z.string().optional(),
+  role: z.nativeEnum(UserRole, {
+    errorMap: (issue, ctx) => {
+      return { message: "The role must be either 'USER' or 'ADMIN'." };
+    },
+  }),
 });
 
 export const UserCreateSchema = z.object({
-  email: z.string().email('Adresse mail invalide'),
+  email: z.string().email('Invalid email format.'),
   password: z
     .string()
-    .min(6, 'Le mot de passe doit avoir au minimun 6 charactères'),
+    .min(6, 'The password must be at least 6 characters long.'),
   role: z.nativeEnum(UserRole, {
     errorMap: (issue, ctx) => {
-      return { message: "Le rôle doit être soit 'USER' soit 'ADMIN'" };
+      return { message: "The role must be either 'USER' or 'ADMIN'." };
     },
   }),
   name: z.string().optional(),

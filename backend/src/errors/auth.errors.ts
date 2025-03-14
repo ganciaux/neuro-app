@@ -24,13 +24,6 @@ export class RoleAccessRequiredError extends AppError {
   }
 }
 
-export class EmailAlreadyExistsError extends AppError {
-  constructor(email: string, message: string = 'Email already exists') {
-    super(message, 409); // 409 Conflict
-    this.message = `Email already exists ${email}`;
-  }
-}
-
 export class InvalidCredentialsError extends AppError {
   constructor(message: string = 'Invalid credentials') {
     super(message, 401); // 401 Unauthorized
@@ -44,3 +37,4 @@ export class RegistrationFailedError extends AppError {
     this.message = `Faild to register user ${email}`;
   }
 }
+

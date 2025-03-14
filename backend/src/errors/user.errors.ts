@@ -21,6 +21,13 @@ export class UserFetchFailedError extends AppError {
   }
 }
 
+export class UserEmailAlreadyExistsError extends AppError {
+  constructor(email: string, message: string = 'Email already exists') {
+    super(message, 409); // 409 Conflict
+    this.message = `Email already exists ${email}`;
+  }
+}
+
 export class UserCreationFailedError extends AppError {
   constructor(email: string, message: string = 'Failed to create user') {
     super(message, 500); // 500 Internal Server Error
@@ -62,6 +69,12 @@ export class UserCountFailedError extends AppError {
   }
 }
 
+export class UserUpdateFailedError extends AppError {
+  constructor(message: string = 'Failed to update user') {
+    super(message, 400); // 400 Bad Request
+  }
+}
+
 export class UserDeletionFailedError extends AppError {
   constructor(userId: string, message: string = 'Failed to delete user') {
     super(message, 500); // 500 Internal Server Error
@@ -75,8 +88,3 @@ export class InvalidUserIdError extends AppError {
   }
 }
 
-export class UserUpdateFailedError extends AppError {
-  constructor(message: string = 'Failed to update user') {
-    super(message, 400); // 400 Bad Request
-  }
-}

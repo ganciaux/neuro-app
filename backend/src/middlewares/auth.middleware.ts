@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User, UserRole, UserJWT } from '../models/user.model';
+import { UserPrisma, UserRole, UserJWTPayload } from '../models/user.model';
 import { APP_ENV } from '../config/environment';
 import {
   JWTExpiredError,
@@ -8,14 +8,15 @@ import {
   JWTNotProvidedError,
   RoleAccessRequiredError,
 } from '../errors/auth.errors';
-import { asyncHandler } from './asyncHandler.middleware';
+import { asyncHandler } from './async.handler.middleware';
 import { findUserById, isValidUserId } from '../services/user.service';
 import { InvalidUserIdError } from '../errors/user.errors';
+import { UserJWTPayloadSchema } from '../schemas/user.schema';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: User;
+      user?: UserPrisma;
     }
   }
 }
@@ -29,13 +30,11 @@ export const authGuard = asyncHandler(
     }
 
     try {
-      const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWT;
+      const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWTPayload;
 
-      if (!isValidUserId(decoded.sub)) {
-        throw new InvalidUserIdError();
-      }
+      const payload:UserJWTPayload = UserJWTPayloadSchema.parse(decoded);
 
-      const user = await findUserById(decoded.sub);
+      const user = await findUserById(payload.sub);
 
       if (!user) {
         throw new JWTInvalidError();

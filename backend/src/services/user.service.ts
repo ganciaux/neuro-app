@@ -1,10 +1,8 @@
-import { UserRole } from '../models/user.model';
+import { UserPrisma, UserPublic, userPublicSelect, UserRole } from '../models/user.model';
 import bcrypt from 'bcryptjs';
-import { Prisma, User } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { APP_ENV } from '../config/environment';
-import { EmailAlreadyExistsError } from '../errors/auth.errors';
 import {
-  InvalidUserIdError,
   UserCountFailedError,
   UserCreationFailedError,
   UserDeletionFailedError,
@@ -12,7 +10,7 @@ import {
   UserFetchByIdFailedError,
   UserFetchFailedError,
   UserFindAllFailedError,
-  UserNotFoundError,
+  UserUpdateFailedError,
 } from '../errors/user.errors';
 import { PrismaError } from '../errors/prisma.errors';
 import { prisma } from '../config/database';
@@ -47,7 +45,7 @@ export async function userExistsById(id: string): Promise<boolean> {
   }
 }
 
-export async function findUserByEmail(email: string) {
+export async function findUserByEmail(email: string):Promise<UserPrisma|null> {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     return user;
@@ -60,7 +58,7 @@ export async function findUserByEmail(email: string) {
   }
 }
 
-export async function findUserById(userId: string) {
+export async function findUserById(userId: string):Promise<UserPrisma|null> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -76,10 +74,16 @@ export async function findUserById(userId: string) {
   }
 }
 
+export async function findUserPublicById(
+  userId: string
+):Promise<UserPublic|null> {
+  return await findUserByIdWithSelect(userId, userPublicSelect) as UserPublic | null;
+}
+
 export async function findUserByIdWithSelect(
   userId: string,
   select: Record<string, boolean>,
-) {
+):Promise<Partial<UserPrisma>|null> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -95,7 +99,7 @@ export async function findUserByIdWithSelect(
   }
 }
 
-export async function findUser(criteria: { email?: string; id?: string }) {
+export async function findUser(criteria: { email?: string; id?: string }):Promise<UserPrisma|null> {
   try {
     const where = criteria.id ? { id: criteria.id } : { email: criteria.email };
     const user = await prisma.user.findUnique({ where });
@@ -109,10 +113,10 @@ export async function findUser(criteria: { email?: string; id?: string }) {
   }
 }
 
-export async function findAllUsers(offset: number = 0, limit: number = 10) {
+export async function findAllUsers(offset: number = 0, limit: number = 10):Promise<UserPublic[]> {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, email: true, name: true, role: true },
+      select: userPublicSelect,
       skip: offset,
       take: limit,
     });
@@ -126,7 +130,7 @@ export async function findAllUsers(offset: number = 0, limit: number = 10) {
   }
 }
 
-export async function getTotalUsersCount() {
+export async function getTotalUsersCount():Promise<number> {
   try {
     return await prisma.user.count();
   } catch (error) {
@@ -143,10 +147,7 @@ export async function createUser(
   password: string,
   name: string = 'name',
   role: UserRole = UserRole.USER,
-): Promise<User> {
-  if (await userExistsByEmail(email)) {
-    throw new EmailAlreadyExistsError(email);
-  }
+): Promise<UserPrisma|null> {
 
   try {
     const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);
@@ -171,14 +172,24 @@ export async function createUser(
   }
 }
 
-export async function deleteUser(userId: string): Promise<User | null> {
-  if (!isValidUserId(userId)) {
-    throw new InvalidUserIdError();
-  }
+export async function updateUser(userId: string, data: Partial<UserPrisma>): Promise<UserPrisma | null> {
 
-  if (await userExistsById(userId)) {
-    throw new UserNotFoundError(userId);
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data,
+    });
+    return updatedUser;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new PrismaError('Faild to update user', error.code, 500);
+    } else {
+      throw new UserUpdateFailedError(userId);
+    }
   }
+}
+
+export async function deleteUser(userId: string): Promise<UserPrisma | null> {
   try {
     const deletedUser = await prisma.user.delete({
       where: { id: userId },
@@ -191,4 +202,9 @@ export async function deleteUser(userId: string): Promise<User | null> {
       throw new UserDeletionFailedError(userId);
     }
   }
+}
+
+export function toUserPublic(user: UserPrisma): UserPublic {
+  const { passwordHash, passwordSalt, ...userPublic } = user;
+  return userPublic;
 }

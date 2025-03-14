@@ -6,20 +6,26 @@ import {
   createUser,
   deleteUser,
   findAllUsers,
-  findUserByIdWithSelect,
+  findUserPublicById,
   isValidUserId,
+  toUserPublic,
+  updateUser,
+  userExistsByEmail,
+  userExistsById,
 } from '../services/user.service';
-import { asyncHandler } from '../middlewares/asyncHandler.middleware';
+import { asyncHandler } from '../middlewares/async.handler.middleware';
 import {
   InvalidUserIdError,
+  UserCreationFailedError,
+  UserEmailAlreadyExistsError,
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
-import { prisma } from '../config/database';
 
 export const getProfile = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(`user.controller: getProfile: [req:${request.requestId}]: getProfile`);
+    
     const userId = request.user?.id;
 
     if (!userId) {
@@ -30,12 +36,7 @@ export const getProfile = asyncHandler(
       throw new InvalidUserIdError();
     }
 
-    const user = await findUserByIdWithSelect(userId, {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-    });
+    const user = await findUserPublicById(userId);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -48,18 +49,14 @@ export const getProfile = asyncHandler(
 export const getUserById = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(`user.controller: getUserById: [req:${request.requestId}]: getUserById`);
+    
     const userId = request.params.id;
 
     if (!isValidUserId(userId)) {
       throw new InvalidUserIdError();
     }
 
-    const user = await findUserByIdWithSelect(userId, {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-    });
+    const user = await findUserPublicById(userId);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -72,7 +69,9 @@ export const getUserById = asyncHandler(
 export const getAllUsers = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(`user.controller: getAllUsers: [req:${request.requestId}]: getAllUsers`);
+    
     const users = await findAllUsers();
+    
     response.json(users);
   },
 );
@@ -80,17 +79,22 @@ export const getAllUsers = asyncHandler(
 export const createUserHandler = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(`user.controller: createUserHandler: [req:${request.requestId}]: createUserHandler`);
-    const validatedData = UserCreateSchema.parse(request.body);
-    const { email, password, name, role }: UserCreateDTO = validatedData;
+    
+    const { email, password, name, role }: UserCreateDTO = UserCreateSchema.parse(request.body);
+
+    if (await userExistsByEmail(email)) {
+      throw new UserEmailAlreadyExistsError(email);
+    }
 
     const user = await createUser(email, password, name, role);
 
-    response.status(201).json({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    });
+    if (!user) {
+      throw new UserCreationFailedError(email);
+    }
+
+    const userPublic = toUserPublic(user);
+    
+    response.status(201).json(userPublic);
   },
 );
 
@@ -104,17 +108,19 @@ export const updateUserHandler = asyncHandler(
       throw new InvalidUserIdError();
     }
 
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { name, email, role },
-      select: { id: true, email: true, name: true, role: true },
-    });
+    if (await userExistsById(userId)) {
+      throw new UserNotFoundError(userId);  
+    }
+
+    const user = await updateUser(userId, { name, email, role });
 
     if (!user) {
       throw new UserUpdateFailedError();
     }
 
-    response.json(user);
+    const userPublic = toUserPublic(user);
+
+    response.json(userPublic);
   },
 );
 
@@ -122,6 +128,14 @@ export const deleteUserHandler = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(`user.controller: deleteUser: [req:${request.requestId}]: deleteUser`);
     const userId = request.params.id;
+
+    if (!isValidUserId(userId)) {
+      throw new InvalidUserIdError();
+    }
+
+    if (await userExistsById(userId)) {
+      throw new UserNotFoundError(userId);  
+    }
 
     const user = await deleteUser(userId);
 

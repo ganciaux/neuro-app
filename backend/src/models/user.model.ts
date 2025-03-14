@@ -1,27 +1,38 @@
 import { Prisma } from '@prisma/client';
 
-export type User = Prisma.UserGetPayload<{}>;
-
 export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
 }
 
-type UserPublic = Pick<User, 'id' | 'email' | 'role'>;
+export type UserPrisma = Prisma.UserGetPayload<{}>;
 
-export type UserWithToken = {
+export type UserPublic = Omit<UserPrisma, 'passwordHash' | 'passwordSalt'>;
+
+type UserPublicKeys = keyof UserPublic;
+
+export const userPublicSelect: Record<UserPublicKeys, boolean> = {
+  id: true,
+  email: true,
+  role: true,
+  name: true,
+  createdAt: false,
+  updatedAt: false
+};
+
+export interface UserWithAuthToken {
   user: UserPublic;
   token: string;
 };
 
-export type UserTest = {
-  user: User;
+export interface UserTestData {
+  user: UserPrisma;
   email: string;
   password: string;
   token: string;
 };
 
-export interface UserJWT {
+export interface UserJWTPayload {
   sub: string;
   email: string;
   role: UserRole;
