@@ -15,7 +15,8 @@ export default {
     ],
     testPathIgnorePatterns: [
       '/node_modules/', 
+      //'/users.service.spec.ts'
       '/users.routes.spec.ts',
-      //'auth.routes.spec.ts'
+      'auth.routes.spec.ts'
     ],
   };

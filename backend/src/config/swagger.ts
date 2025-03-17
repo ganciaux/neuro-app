@@ -2,6 +2,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Express } from 'express';
 import { APP_ENV } from './environment';
+import { logger } from '../logger/logger';
 
 /**
  * Swagger configuration options.
@@ -35,7 +36,7 @@ const swaggerSpec = swaggerJSDoc(options);
  */
 export function setupSwagger(app: Express): void {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log(
+  logger.info(
     `📄 Swagger available at http://localhost:${APP_ENV.PORT}/api-docs`,
   );
 }

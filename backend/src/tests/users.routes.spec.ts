@@ -10,6 +10,7 @@ const API_BASE_PATH = '/api/v1/users';
 logger.info('users.routes.spec: JEST: 🪪 User Routes');
 
 describe.skip('User Routes', () => {
+  /*
   describe(`GET ${API_BASE_PATH}/me`, () => {
     it('should get current user profile', async () => {
       const res = await request(app)
@@ -161,4 +162,5 @@ describe.skip('User Routes', () => {
       expect(res.status).toBe(403);
     });
   });
+  */
 });

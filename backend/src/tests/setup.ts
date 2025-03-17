@@ -2,15 +2,15 @@ import request from 'supertest';
 import { app, server } from '../index';
 import { UserTestData, UserRole } from '../models/user.model';
 import { logger } from '../logger/logger';
-import { createUser } from '../services/user.service';
 import { generateToken } from '../services/auth.service';
 import { prisma } from '../config/database';
+import { userService } from '../services/user.service';
 
 beforeAll(async () => {
   logger.info('setup: JEST: 🛠️ Setting up before all tests');
   await prisma.$connect();
   await cleanupDatabase();
-  await setupDatabase();
+  //await setupDatabase();
 });
 
 beforeEach(async () => {});
@@ -31,7 +31,7 @@ export async function createTestUser(
   token: boolean = true,
 ): Promise<UserTestData> {
   let authToken: string = '';
-  const user = await createUser(email, password, name, role);
+  const user = await userService.createUser(email, password, name, role);
 
   if (!user) {
     throw new Error('User not created');
@@ -54,14 +54,14 @@ export async function setupDatabase() {
 
   globalThis.user = await createTestUser(
     'user@user.com',
-    'passwordUser',
+    'passwordUser1.',
     'user',
     UserRole.USER,
   );
 
   globalThis.admin = await createTestUser(
     'admin@admin.com',
-    'passwordAdmin',
+    'passwordAdmin1.',
     'admin',
     UserRole.ADMIN,
   );

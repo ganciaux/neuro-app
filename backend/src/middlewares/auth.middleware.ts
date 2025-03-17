@@ -9,9 +9,8 @@ import {
   RoleAccessRequiredError,
 } from '../errors/auth.errors';
 import { asyncHandler } from './async.handler.middleware';
-import { findUserById, isValidUserId } from '../services/user.service';
-import { InvalidUserIdError } from '../errors/user.errors';
 import { UserJWTPayloadSchema } from '../schemas/user.schema';
+import { userService } from '../services/user.service';
 
 declare global {
   namespace Express {
@@ -34,7 +33,7 @@ export const authGuard = asyncHandler(
 
       const payload:UserJWTPayload = UserJWTPayloadSchema.parse(decoded);
 
-      const user = await findUserById(payload.sub);
+      const user = await userService.findById(payload.sub);
 
       if (!user) {
         throw new JWTInvalidError();

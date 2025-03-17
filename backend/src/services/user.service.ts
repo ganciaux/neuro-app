@@ -1,7 +1,6 @@
 import { Prisma, User } from '@prisma/client';
 import {
   BaseService,
-  BaseFilterOptions,
   PaginationOptions,
   PaginatedResult,
 } from './base.service';
@@ -21,11 +20,12 @@ import {
   userPublicSelect,
   UserRole,
 } from '../models/user.model';
+import { logger } from '../logger/logger';
 
 /**
  * Service for managing users
  */
-class UserService extends BaseService<
+export class UserService extends BaseService<
   User,
   Prisma.UserCreateInput,
   Prisma.UserUpdateInput,
@@ -60,6 +60,9 @@ class UserService extends BaseService<
     return UserService.instance;
   }
 
+  hello() {
+    return 'user.service: hello';
+  }
   /**
    * Checks if a user ID is valid
    */
@@ -114,6 +117,7 @@ class UserService extends BaseService<
         where: { email },
         select: { id: true },
       });
+
       return !!user;
     } catch (error) {
       this.handlePrismaError(
@@ -266,6 +270,7 @@ class UserService extends BaseService<
     password: string,
     name: string = '',
     role: UserRole = UserRole.USER,
+    isActive: boolean = false,
   ): Promise<User> {
     this.validateNewUserData(email, password);
 
@@ -285,7 +290,7 @@ class UserService extends BaseService<
           passwordSalt: salt,
           name: name || email.split('@')[0], // Use the local part of the email if name is not provided
           role,
-          isActive: true,
+          isActive,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -465,7 +470,7 @@ class UserService extends BaseService<
 }
 
 // Create a singleton instance of the service
-const userService = UserService.getInstance();
+export const userService = UserService.getInstance();
 
 // Export service methods
 export const {
@@ -475,6 +480,7 @@ export const {
   getCount,
 
   // UserService-specific methods
+  hello,
   isValidUserId,
   isValidEmail,
   isPasswordStrongEnough,
