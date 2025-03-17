@@ -33,10 +33,14 @@ class UserService extends BaseService<
   Prisma.UserOrderByWithRelationInput,
   UserFilterOptions
 > {
+  private static instance: UserService;
   private static readonly USER_ID_REGEX = /^[0-9a-fA-F-]{36}$/;
   private static readonly EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  constructor() {
+  /**
+   * Constructor for the UserService class
+   */ 
+  private constructor() {
     super(
       prisma,
       prisma.user,
@@ -47,18 +51,35 @@ class UserService extends BaseService<
   }
 
   /**
+   * Static method to get the singleton instance of the service
+   */
+  public static getInstance(): UserService {
+    if (!UserService.instance) {
+      UserService.instance = new UserService();
+    }
+    return UserService.instance;
+  }
+
+  /**
    * Checks if a user ID is valid
    */
   isValidUserId(userId: string): boolean {
-    if (!userId) return false;
-    return UserService.USER_ID_REGEX.test(userId);
+    return !!userId && UserService.USER_ID_REGEX.test(userId);
   }
 
   /**
    * Validates an email address
    */
   isValidEmail(email: string): boolean {
-    return UserService.EMAIL_REGEX.test(email);
+    return !!email && UserService.EMAIL_REGEX.test(email);
+  }
+
+  /**
+   * Checks if a password is strong enough
+   */
+  isPasswordStrongEnough(password: string): boolean {
+    const strongPasswordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+    return strongPasswordRegex.test(password);
   }
 
   /**
@@ -198,14 +219,14 @@ class UserService extends BaseService<
    * Validates new user data
    */
   private validateNewUserData(email: string, password: string): void {
-    if (!email || !this.isValidEmail(email)) {
+    if (!this.isValidEmail(email)) {
       throw new UserCreationFailedError(
         email || 'invalid',
         'Invalid email format',
       );
     }
 
-    if (!password || password.length < 6) {
+    if (!password || !this.isPasswordStrongEnough(password)) {
       throw new UserCreationFailedError(
         email,
         'Password must be at least 6 characters long',
@@ -267,16 +288,23 @@ class UserService extends BaseService<
       throw new UserUpdateFailedError(userId, 'Invalid user ID format');
     }
 
-    // Check if the user exists
-    const user = await this.findById(userId);
-    if (!user) {
-      throw new UserUpdateFailedError(userId, 'User not found');
-    }
-
-    // Prevent updating sensitive fields
-    const { id, createdAt, passwordHash, passwordSalt, ...updateData } = data;
-
     try {
+      // Check if the user exists
+      const user = await this.findById(userId);
+      if (!user) {
+        throw new UserUpdateFailedError(userId, 'User not found');
+      }
+
+      if (data.email) {
+        const userExists = await this.userExistsByEmail(data.email);
+        if (userExists) {
+          throw new UserCreationFailedError(data.email, 'Email already in use');
+        }
+      }
+
+      // Prevent updating sensitive fields
+      const { id, createdAt, passwordHash, passwordSalt, ...updateData } = data;
+
       return await prisma.user.update({
         where: { id: userId },
         data: {
@@ -297,9 +325,13 @@ class UserService extends BaseService<
   /**
    * Updates a user's password
    */
-  async updateUserPassword(userId: string, newPassword: string): Promise<User> {
+  async updateUserPassword(userId: string, currentPassword: string, newPassword: string): Promise<User> {
     if (!this.isValidUserId(userId)) {
       throw new UserUpdateFailedError(userId, 'Invalid user ID format');
+    }
+
+    if (!currentPassword) {
+      throw new UserUpdateFailedError(userId, 'Current password is required');
     }
 
     if (!newPassword || newPassword.length < 6) {
@@ -309,13 +341,21 @@ class UserService extends BaseService<
       );
     }
 
-    // Check if the user exists
-    const user = await this.findById(userId);
-    if (!user) {
-      throw new UserUpdateFailedError(userId, 'User not found');
-    }
-
     try {
+      // Check if the user exists
+      const user = await this.findById(userId);
+      if (!user) {
+        throw new UserUpdateFailedError(userId, 'User not found');
+      }
+
+      const isCurrentPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.passwordHash,
+      );
+      if (!isCurrentPasswordValid) {
+        throw new UserUpdateFailedError(userId, 'Current password is incorrect');
+      }
+
       const salt = await bcrypt.genSalt(APP_ENV.PASSWORD_SALT_ROUNDS);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
@@ -402,7 +442,7 @@ class UserService extends BaseService<
 }
 
 // Create a singleton instance of the service
-const userService = new UserService();
+const userService = UserService.getInstance();
 
 // Export service methods
 export const {
@@ -414,6 +454,7 @@ export const {
   // UserService-specific methods
   isValidUserId,
   isValidEmail,
+  isPasswordStrongEnough,
   userExistsByEmail,
   findUserByEmail,
   findUserPublicById,
