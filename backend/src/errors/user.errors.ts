@@ -128,7 +128,7 @@ export class UserCountFailedError extends AppError {
  * - Status code: 400 (Bad Request).
  */
 export class UserUpdateFailedError extends AppError {
-  constructor(message: string = 'Failed to update user') {
+  constructor(userId: string, message: string = 'Failed to update user') {
     super(message, 400); // 400 Bad Request
   }
 }

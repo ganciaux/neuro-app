@@ -155,7 +155,7 @@ export const updateUserHandler = asyncHandler(
     const user = await updateUser(userId, { name, email, role });
 
     if (!user) {
-      throw new UserUpdateFailedError();
+      throw new UserUpdateFailedError(userId);
     }
 
     const userPublic = toUserPublic(user);

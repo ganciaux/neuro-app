@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { BaseFilterOptions } from '../services/base.service';
 
 /**
  * Enum representing user roles.
@@ -31,10 +32,20 @@ export const userPublicSelect: Record<UserPublicKeys, boolean> = {
   email: true,
   role: true,
   name: true,
+  isActive: true,
   createdAt: false,
   updatedAt: false,
 };
 
+/**
+ * Represents the filter options for user queries.
+ */
+export interface UserFilterOptions extends BaseFilterOptions {
+  /** Filter by user role. */
+  role?: UserRole;
+  /** Filter by active status. */
+  isActive?: boolean;
+}
 /**
  * Represents a user object with an authentication token.
  */
