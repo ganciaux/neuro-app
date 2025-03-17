@@ -45,6 +45,10 @@ export interface UserFilterOptions extends BaseFilterOptions {
   role?: UserRole;
   /** Filter by active status. */
   isActive?: boolean;
+  /** Filter by email. */
+  email?: string;
+  /** Filter by name. */
+  name?: string;
 }
 /**
  * Represents a user object with an authentication token.

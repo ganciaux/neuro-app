@@ -4,7 +4,6 @@ import { logger } from '../logger/logger';
 import { createTestUser } from './setup';
 import { UserRole, UserTestData } from '../models/user.model';
 import { deleteUser } from '../services/user.service';
-import { prisma } from '../config/database';
 
 const API_BASE_PATH = '/api/v1/users';
 
