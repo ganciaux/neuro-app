@@ -10,8 +10,11 @@ import {
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
-import { isValidUserId, findUserPublicById, createUser, updateUser, deleteUser, toUserPublic, findAll, userExistsById } from '../services/user.service';
+//import { isValidUserId, findUserPublicById, createUser, updateUser, deleteUser, toUserPublic, findAll, userExistsById } from '../services/user.service';
 import { UserFilterOptions, UserRole } from '../models/user.model';
+import { Container } from '../container';
+
+const userService = Container.getUserService();
 
 /**
  * Retrieves all users.
@@ -35,7 +38,7 @@ export const findAllUsersHandler = asyncHandler(
       role: request.query.role as UserRole,
     };
 
-    const users = await findAll(paginationOptions, filterOptions);
+    const users = await userService.findAllUsers(paginationOptions, filterOptions);
 
     response.json(users);
   },
@@ -190,7 +193,7 @@ export const searchUsersHandler = asyncHandler(
       role: request.query.role as UserRole,
     };
 
-    const users = await findAll(paginationOptions, filterOptions);
+    const users = await userService.findAllUsers(paginationOptions, filterOptions);
 
     response.json(users);
   },

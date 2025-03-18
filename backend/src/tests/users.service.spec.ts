@@ -14,7 +14,7 @@ import { UserFetchByEmailFailedError } from '../errors/user.errors';
 jest.mock('../config/database', () => ({
   prisma: {
     user: {
-      findUnique: jest.fn(), // Mock de la méthode findUnique
+      findUnique: jest.fn(),
     },
   },
 }));

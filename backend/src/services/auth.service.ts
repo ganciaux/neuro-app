@@ -1,10 +1,13 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { APP_ENV } from '../config/environment';
-import { createUser, findUserByEmail } from './user.service';
 import { logger } from '../logger/logger';
 import { InvalidCredentialsError } from '../errors/auth.errors';
 import { UserCreationFailedError } from '../errors/user.errors';
+import { Container } from '../container';
+import { UserRole } from '../models/user.model';
+
+const userService = Container.getUserService();
 
 /**
  * Service for authentication.
@@ -12,7 +15,7 @@ import { UserCreationFailedError } from '../errors/user.errors';
 export async function registerUser(email: string, password: string):Promise<{id: string, email: string}> {
   logger.info(`auth.service: registerUser:`);
   
-  const user = await createUser(email, password);
+  const user = await userService.createUser(email, password, '', UserRole.USER, true);
 
   if (!user) {
     throw new UserCreationFailedError(email);
@@ -23,7 +26,7 @@ export async function registerUser(email: string, password: string):Promise<{id:
 export async function generateToken(email: string, password: string):Promise<string> {
   logger.info(`auth.service: generateToken:`)
 
-  const user = await findUserByEmail(email);
+  const user = await userService.findUserByEmail(email);
 
   if (!user) {
     throw new InvalidCredentialsError(email);

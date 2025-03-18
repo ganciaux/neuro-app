@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { UserRole } from '../models/user.model';
-import { isValidUserId } from '../services/user.service';
+import { UserValidation } from '../validators/user.validator';
+
 
 /**
  * Schema for validating user roles.
@@ -14,7 +15,7 @@ export const UserRoleSchema = z.nativeEnum(UserRole);
  */
 export const UserJWTPayloadSchema = z.object({
   /** Subject (user ID). */
-  sub: z.string().refine((value) => isValidUserId(value), {
+  sub: z.string().refine((value) => UserValidation.validateUserId(value), {
     message: 'Invalid user ID format.',
   }),
   /** User email. */
@@ -37,7 +38,7 @@ export const UserJWTPayloadSchema = z.object({
  */
 export const UserIdSchema = z.object({
   /** User ID. */
-  userId: z.string().refine((value) => isValidUserId(value), {
+  userId: z.string().refine((value) => UserValidation.validateUserId(value), {
     message: 'The user ID must be a valid UUID.',
   }),
 });
