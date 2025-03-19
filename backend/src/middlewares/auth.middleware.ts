@@ -10,7 +10,9 @@ import {
 } from '../errors/auth.errors';
 import { asyncHandler } from './async.handler.middleware';
 import { UserJWTPayloadSchema } from '../schemas/user.schema';
-import { userService } from '../services/user.service';
+import { Container } from '../container';
+
+const userService = Container.getUserService();
 
 declare global {
   namespace Express {
@@ -31,7 +33,7 @@ export const authGuard = asyncHandler(
     try {
       const decoded = jwt.verify(token, APP_ENV.JWT_SECRET) as UserJWTPayload;
 
-      const payload:UserJWTPayload = UserJWTPayloadSchema.parse(decoded);
+      const payload: UserJWTPayload = UserJWTPayloadSchema.parse(decoded);
 
       const user = await userService.findById(payload.sub);
 

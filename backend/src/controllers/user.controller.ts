@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { logger } from '../logger/logger';
-import { UserCreateSchema } from '../schemas/user.schema';
-import { UserCreateDTO } from '../dtos/user.dto';
+import {
+  UserCreateSchema,
+  UserIdSchema,
+  UserUpdateSchema,
+} from '../schemas/user.schema';
+import { UserCreateZodDTO, UserUpdateZodDTO } from '../dtos/user.dto';
 
 import { asyncHandler } from '../middlewares/async.handler.middleware';
 import {
@@ -38,7 +42,7 @@ export const findAllUsersHandler = asyncHandler(
       role: request.query.role as UserRole,
     };
 
-    const users = await userService.findAllUsers(paginationOptions, filterOptions);
+    const users = await userService.findAll(paginationOptions, filterOptions);
 
     response.json(users);
   },
@@ -56,13 +60,14 @@ export const findMeHandler = asyncHandler(
       `user.controller: findMeHandler: [req:${request.requestId}]: findMeHandler`,
     );
 
-    const userId = request.user?.id;
+    const { userId } = UserIdSchema.parse(request.body);
+    //const userId = request.user?.id;
 
     if (!userId) {
       throw new UserNotFoundError();
     }
 
-    const user = await findUserPublicById(userId);
+    const user = await userService.findByIdToPublic(userId);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -84,9 +89,18 @@ export const findUserByIdHandler = asyncHandler(
       `user.controller: findUserByIdHandler: [req:${request.requestId}]: findUserByIdHandler`,
     );
 
-    const userId = request.params.id;
+    const { userId } = UserIdSchema.parse(request.params);
+    //const userId = request.params.id;
 
-    const user = await findUserPublicById(userId);
+    if (!userService.isValidUserId(userId)) {
+      throw new InvalidUserIdError();
+    }
+
+    if (await userService.existsById(userId)) {
+      throw new UserNotFoundError(userId);
+    }
+
+    const user = await userService.findById(userId);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -107,9 +121,22 @@ export const findUserPublicByIdHandler = asyncHandler(
     logger.info(
       `user.controller: findUserPublicByIdHandler: [req:${request.requestId}]: findUserPublicByIdHandler`,
     );
-    return;
-  }
-)
+    const { userId } = UserIdSchema.parse(request.params);
+    //const userId = request.params.id;
+
+    if (!userId) {
+      throw new UserNotFoundError();
+    }
+
+    const user = await userService.findByIdToPublic(userId);
+
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+
+    response.json(user);
+  },
+);
 
 /**
  * Retrieves all public users.
@@ -193,7 +220,7 @@ export const searchUsersHandler = asyncHandler(
       role: request.query.role as UserRole,
     };
 
-    const users = await userService.findAllUsers(paginationOptions, filterOptions);
+    const users = await userService.findAll(paginationOptions, filterOptions);
 
     response.json(users);
   },
@@ -211,16 +238,16 @@ export const createUserHandler = asyncHandler(
       `user.controller: createUserHandler: [req:${request.requestId}]: createUserHandler`,
     );
 
-    const { email, password, name, role }: UserCreateDTO =
+    const { email, password, name, role }: UserCreateZodDTO =
       UserCreateSchema.parse(request.body);
 
-    const user = await createUser(email, password, name, role);
+    const user = await userService.create(email, password, name, role, false);
 
     if (!user) {
       throw new UserCreationFailedError(email);
     }
 
-    const userPublic = toUserPublic(user);
+    const userPublic = userService.toUserPublic(user);
 
     response.status(201).json(userPublic);
   },
@@ -237,16 +264,21 @@ export const updateUserHandler = asyncHandler(
     logger.info(
       `user.controller: updateUser: [req:${request.requestId}]: updateUser`,
     );
-    const userId = request.params.id;
-    const { name, email, role } = request.body;
+    //const userId = request.params.id;
+    //const { name, email, role } = request.body;
 
-    const user = await updateUser(userId, { name, email, role });
+    const { userId } = UserIdSchema.parse(request.params);
+    const { name, email, role }: UserUpdateZodDTO = UserUpdateSchema.parse(
+      request.body,
+    );
+
+    const user = await userService.update(userId, { name, email, role });
 
     if (!user) {
       throw new UserUpdateFailedError(userId);
     }
 
-    const userPublic = toUserPublic(user);
+    const userPublic = userService.toUserPublic(user);
 
     response.json(userPublic);
   },
@@ -308,17 +340,19 @@ export const deleteUserHandler = asyncHandler(
     logger.info(
       `user.controller: deleteUser: [req:${request.requestId}]: deleteUser`,
     );
-    const userId = request.params.id;
+    //const userId = request.params.id;
 
-    if (!isValidUserId(userId)) {
+    const { userId } = UserIdSchema.parse(request.body);
+
+    if (!userService.isValidUserId(userId)) {
       throw new InvalidUserIdError();
     }
 
-    if (await userExistsById(userId)) {
+    if (await userService.existsById(userId)) {
       throw new UserNotFoundError(userId);
     }
 
-    const user = await deleteUser(userId);
+    const user = await userService.delete(userId);
 
     response.status(204).send();
   },

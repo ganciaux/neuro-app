@@ -1,7 +1,11 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { IBaseRepository } from "./IBaseRepository";
-import { PrismaError } from "../../errors/prisma.errors";
-import { BaseFilterOptions, PaginatedResult, PaginationOptions } from "../../common/types";
+import { Prisma, PrismaClient } from '@prisma/client';
+import { IBaseRepository } from './IBaseRepository';
+import { PrismaError } from '../../errors/prisma.errors';
+import {
+  BaseFilterOptions,
+  PaginatedResult,
+  PaginationOptions,
+} from '../../common/types';
 
 /**
  * Implémentation de base du repository avec Prisma
@@ -12,8 +16,17 @@ export abstract class BasePrismaRepository<
   UpdateInput,
   WhereInput,
   OrderByInput,
-  FilterOptions extends BaseFilterOptions
-> implements IBaseRepository<T, CreateInput, UpdateInput, WhereInput, OrderByInput, FilterOptions> {
+  FilterOptions extends BaseFilterOptions,
+> implements
+    IBaseRepository<
+      T,
+      CreateInput,
+      UpdateInput,
+      WhereInput,
+      OrderByInput,
+      FilterOptions
+    >
+{
   /** Default page size. */
   protected readonly DEFAULT_PAGE_SIZE = 10;
   /** Maximum page size. */
@@ -32,13 +45,25 @@ export abstract class BasePrismaRepository<
     protected prismaModel: any,
     protected modelName: string,
     protected allowedSortFields: string[],
-    protected searchFields: string[] = []
+    protected searchFields: string[] = [],
   ) {}
+
+  /**
+   * Finds an item by email.
+   */
+  async findByEmail(email: string, select?: any): Promise<T | null> {
+    return this.prismaModel.findUnique({ where: { email }, select });
+  }
 
   /**
    * Handles Prisma errors uniformly.
    */
-  protected handlePrismaError(error: unknown, errorMessage: string, customErrorConstructor: any, ...params: any[]): never {
+  protected handlePrismaError(
+    error: unknown,
+    errorMessage: string,
+    customErrorConstructor: any,
+    ...params: any[]
+  ): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       const statusCode = error.code === 'P2025' ? 404 : 500; // Not found vs server error
       throw new PrismaError(errorMessage, error.code, statusCode);
@@ -50,23 +75,28 @@ export abstract class BasePrismaRepository<
   /**
    * Normalizes pagination options.
    */
-  protected normalizePagination(pagination?: Partial<PaginationOptions>): PaginationOptions {
+  protected normalizePagination(
+    pagination?: Partial<PaginationOptions>,
+  ): PaginationOptions {
     const page = pagination?.page && pagination.page > 0 ? pagination.page : 1;
-    const pageSize = pagination?.pageSize && pagination.pageSize > 0 
-      ? Math.min(pagination.pageSize, this.MAX_PAGE_SIZE)
-      : this.DEFAULT_PAGE_SIZE;
-    
+    const pageSize =
+      pagination?.pageSize && pagination.pageSize > 0
+        ? Math.min(pagination.pageSize, this.MAX_PAGE_SIZE)
+        : this.DEFAULT_PAGE_SIZE;
+
     return { page, pageSize };
   }
 
   /**
    * Builds the search filter.
    */
-  protected buildSearchFilter(searchTerm?: string): Prisma.Enumerable<any> | undefined {
+  protected buildSearchFilter(
+    searchTerm?: string,
+  ): Prisma.Enumerable<any> | undefined {
     if (!searchTerm || this.searchFields.length === 0) return undefined;
 
-    return this.searchFields.map(field => ({
-      [field]: { contains: searchTerm, mode: 'insensitive' }
+    return this.searchFields.map((field) => ({
+      [field]: { contains: searchTerm, mode: 'insensitive' },
     }));
   }
 
@@ -77,14 +107,14 @@ export abstract class BasePrismaRepository<
     if (!options) return {} as WhereInput;
 
     const filter: any = {};
-    
+
     if (options.searchTerm) {
       const searchFilters = this.buildSearchFilter(options.searchTerm);
       if (searchFilters) {
         filter.OR = searchFilters;
       }
     }
-    
+
     return filter as WhereInput;
   }
 
@@ -92,15 +122,16 @@ export abstract class BasePrismaRepository<
    * Builds the sorting order.
    */
   protected buildOrderBy(options?: any): OrderByInput {
-    if (!options?.sortBy) return { createdAt: 'desc' } as unknown as OrderByInput;
+    if (!options?.sortBy)
+      return { createdAt: 'desc' } as unknown as OrderByInput;
 
     const sortOrder = options.sortOrder || 'asc';
-    
+
     // Check if the sort field is allowed
-    const sortField = this.allowedSortFields.includes(options.sortBy) 
-      ? options.sortBy 
+    const sortField = this.allowedSortFields.includes(options.sortBy)
+      ? options.sortBy
       : 'createdAt';
-    
+
     return { [sortField]: sortOrder } as unknown as OrderByInput;
   }
 
@@ -110,13 +141,13 @@ export abstract class BasePrismaRepository<
   async findAll(
     paginationOptions?: Partial<PaginationOptions>,
     filterOptions?: any,
-    select?: any
+    select?: any,
   ): Promise<PaginatedResult<T>> {
     try {
       const { page, pageSize } = this.normalizePagination(paginationOptions);
       const where = this.buildFilter(filterOptions);
       const orderBy = this.buildOrderBy(filterOptions);
-      
+
       const [items, total] = await Promise.all([
         this.prismaModel.findMany({
           select,
@@ -125,7 +156,7 @@ export abstract class BasePrismaRepository<
           skip: (page - 1) * pageSize,
           take: pageSize,
         }),
-        this.prismaModel.count({ where })
+        this.prismaModel.count({ where }),
       ]);
 
       return {
@@ -133,14 +164,14 @@ export abstract class BasePrismaRepository<
         total,
         page,
         pageSize,
-        totalPages: Math.ceil(total / pageSize)
+        totalPages: Math.ceil(total / pageSize),
       };
     } catch (error) {
       this.handlePrismaError(
-        error, 
-        `Failed to fetch ${this.modelName} items`, 
+        error,
+        `Failed to fetch ${this.modelName} items`,
         Error,
-        `Failed to fetch ${this.modelName} items`
+        `Failed to fetch ${this.modelName} items`,
       );
     }
   }
@@ -152,14 +183,14 @@ export abstract class BasePrismaRepository<
     try {
       return await this.prismaModel.findUnique({
         where: { id },
-        select
+        select,
       });
     } catch (error) {
       this.handlePrismaError(
-        error, 
-        `Failed to fetch ${this.modelName} by ID`, 
+        error,
+        `Failed to fetch ${this.modelName} by ID`,
         Error,
-        `Failed to fetch ${this.modelName} with ID ${id}`
+        `Failed to fetch ${this.modelName} with ID ${id}`,
       );
     }
   }
@@ -168,7 +199,7 @@ export abstract class BasePrismaRepository<
    * Creates a new item.
    */
   async create(data: CreateInput): Promise<T> {
-    return this.prismaModel.create({data});
+    return this.prismaModel.create({ data });
   }
 
   /**
@@ -180,15 +211,15 @@ export abstract class BasePrismaRepository<
         where: { id },
         data: {
           ...data,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
     } catch (error) {
       this.handlePrismaError(
-        error, 
-        `Failed to update ${this.modelName}`, 
+        error,
+        `Failed to update ${this.modelName}`,
         Error,
-        `Failed to update ${this.modelName} with ID ${id}`
+        `Failed to update ${this.modelName} with ID ${id}`,
       );
     }
   }
@@ -199,14 +230,14 @@ export abstract class BasePrismaRepository<
   async delete(id: string): Promise<T> {
     try {
       return await this.prismaModel.delete({
-        where: { id }
+        where: { id },
       });
     } catch (error) {
       this.handlePrismaError(
-        error, 
-        `Failed to delete ${this.modelName}`, 
+        error,
+        `Failed to delete ${this.modelName}`,
         Error,
-        `Failed to delete ${this.modelName} with ID ${id}`
+        `Failed to delete ${this.modelName} with ID ${id}`,
       );
     }
   }
@@ -219,10 +250,10 @@ export abstract class BasePrismaRepository<
       return await this.prismaModel.count({ where });
     } catch (error) {
       this.handlePrismaError(
-        error, 
-        `Failed to get ${this.modelName} count`, 
+        error,
+        `Failed to get ${this.modelName} count`,
         Error,
-        `Failed to count ${this.modelName} items`
+        `Failed to count ${this.modelName} items`,
       );
     }
   }

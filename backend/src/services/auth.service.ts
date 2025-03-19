@@ -12,10 +12,19 @@ const userService = Container.getUserService();
 /**
  * Service for authentication.
  */
-export async function registerUser(email: string, password: string):Promise<{id: string, email: string}> {
+export async function registerUser(
+  email: string,
+  password: string,
+): Promise<{ id: string; email: string }> {
   logger.info(`auth.service: registerUser:`);
-  
-  const user = await userService.createUser(email, password, '', UserRole.USER, true);
+
+  const user = await userService.create(
+    email,
+    password,
+    '',
+    UserRole.USER,
+    true,
+  );
 
   if (!user) {
     throw new UserCreationFailedError(email);
@@ -23,10 +32,13 @@ export async function registerUser(email: string, password: string):Promise<{id:
   return { id: user.id, email: user.email };
 }
 
-export async function generateToken(email: string, password: string):Promise<string> {
-  logger.info(`auth.service: generateToken:`)
+export async function generateToken(
+  email: string,
+  password: string,
+): Promise<string> {
+  logger.info(`auth.service: generateToken:`);
 
-  const user = await userService.findUserByEmail(email);
+  const user = await userService.findByEmail(email);
 
   if (!user) {
     throw new InvalidCredentialsError(email);
@@ -42,7 +54,7 @@ export async function generateToken(email: string, password: string):Promise<str
     email: user.email,
     role: user.role,
   };
-  
+
   const token = jwt.sign(payload, APP_ENV.JWT_SECRET, {
     expiresIn: APP_ENV.JWT_EXPIRATION,
   });

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { UserRole } from '../models/user.model';
-import { UserValidation } from '../validators/user.validator';
-
+import { UserValidator } from '../validators/user.validator';
 
 /**
  * Schema for validating user roles.
@@ -15,7 +14,7 @@ export const UserRoleSchema = z.nativeEnum(UserRole);
  */
 export const UserJWTPayloadSchema = z.object({
   /** Subject (user ID). */
-  sub: z.string().refine((value) => UserValidation.validateUserId(value), {
+  sub: z.string().refine((value) => UserValidator.validateUserId(value), {
     message: 'Invalid user ID format.',
   }),
   /** User email. */
@@ -38,7 +37,7 @@ export const UserJWTPayloadSchema = z.object({
  */
 export const UserIdSchema = z.object({
   /** User ID. */
-  userId: z.string().refine((value) => UserValidation.validateUserId(value), {
+  userId: z.string().refine((value) => UserValidator.validateUserId(value), {
     message: 'The user ID must be a valid UUID.',
   }),
 });
@@ -53,7 +52,8 @@ export const UserUpdateSchema = z.object({
   /** User password. */
   password: z
     .string()
-    .min(6, 'The password must be at least 6 characters long.'),
+    .min(6, 'The password must be at least 6 characters long.')
+    .optional(),
   /** User name (optional). */
   name: z.string().optional(),
   /** User role. */

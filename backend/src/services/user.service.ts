@@ -1,13 +1,13 @@
-import { User } from "@prisma/client";
-import { UserFilterOptions, UserPublic, UserRole } from "../models/user.model";
-import { IUserRepository } from "../repositories/user/IUserRepository";
-import { UserValidator } from "../validators/user.validator";
-import bcrypt from "bcryptjs";
-import { UserUpdateDTO } from "../dtos/user.dto";
-import { PaginationOptions } from "../common/types";
+import { User } from '@prisma/client';
+import { UserFilterOptions, UserPublic, UserRole } from '../models/user.model';
+import { IUserRepository } from '../repositories/user/IUserRepository';
+import { UserValidator } from '../validators/user.validator';
+import bcrypt from 'bcryptjs';
+import { UserUpdateDTO } from '../dtos/user.dto';
+import { PaginationOptions } from '../common/types';
 
 export class UserService {
-  constructor(private userRepository: IUserRepository) { }
+  constructor(private userRepository: IUserRepository) {}
 
   /**
    * Checks if a user ID is valid
@@ -31,6 +31,9 @@ export class UserService {
     return strongPasswordRegex.test(password);
   }
 
+  async existsById(userId: string): Promise<boolean> {
+    return !!this.userRepository.findById(userId);
+  }
   /**
    * Validates new user data
    */
@@ -47,10 +50,10 @@ export class UserService {
   /**
    * Creates a new user
    */
-  async createUser(
+  async create(
     email: string,
     password: string,
-    name: string,
+    name: string = '',
     role: UserRole,
     isActive: boolean,
   ): Promise<User> {
@@ -77,7 +80,7 @@ export class UserService {
   /**
    * Updates a user
    */
-  async updateUser(userId: string, data: Partial<UserUpdateDTO>): Promise<User> {
+  async update(userId: string, data: Partial<UserUpdateDTO>): Promise<User> {
     if (!this.isValidUserId(userId)) {
       throw new Error('Invalid user ID');
     }
@@ -86,9 +89,24 @@ export class UserService {
   }
 
   /**
+   * Delete a user
+   */
+  async delete(userId: string): Promise<User> {
+    if (!this.isValidUserId(userId)) {
+      throw new Error('Invalid user ID');
+    }
+
+    return this.userRepository.delete(userId);
+  }
+
+  /**
    * Updates a user's password
    */
-  async updateUserPassword(userId: string, currentPassword: string, newPassword: string): Promise<User> {
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<User> {
     if (!this.isValidUserId(userId)) {
       throw new Error('Invalid user ID');
     }
@@ -98,7 +116,10 @@ export class UserService {
       throw new Error('User not found');
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new Error('Current password is incorrect');
     }
@@ -130,26 +151,53 @@ export class UserService {
   /**
    * Deactivates a user
    */
-  async deactivateUser(userId: string): Promise<User> {
+  async deactivate(userId: string): Promise<User> {
     return this.userRepository.update(userId, { isActive: false });
   }
 
   /**
    * Reactivates a user
    */
-  async reactivateUser(userId: string): Promise<User> {
+  async reactivate(userId: string): Promise<User> {
     return this.userRepository.update(userId, { isActive: true });
   }
 
   /**
-* Finds a user by email
-*/
-  async findUserByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findUserByEmail(email);
+   * Finds a user by email
+   */
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findByEmail(email);
   }
 
-  async findAllUsers(paginationOptions?: Partial<PaginationOptions>, filterOptions?: UserFilterOptions) {
-    const users = await this.userRepository.findAll(paginationOptions, filterOptions);
+  /**
+   * Finds a user by user id
+   */
+  async findById(userId: string): Promise<User | null> {
+    return this.userRepository.findById(userId);
+  }
+
+  /**
+   * Finds a user by user id
+   */
+  async findByIdToPublic(userId: string): Promise<UserPublic | null> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      return null;
+    }
+    return this.toUserPublic(user);
+  }
+
+  /**
+   * Finds all users
+   */
+  async findAll(
+    paginationOptions?: Partial<PaginationOptions>,
+    filterOptions?: UserFilterOptions,
+  ) {
+    const users = await this.userRepository.findAll(
+      paginationOptions,
+      filterOptions,
+    );
     return users;
   }
 }

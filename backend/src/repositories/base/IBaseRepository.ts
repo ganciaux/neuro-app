@@ -1,6 +1,10 @@
-import { PaginatedResult, PaginationOptions, BaseFilterOptions } from "../../common/types";
+import {
+  PaginatedResult,
+  PaginationOptions,
+  BaseFilterOptions,
+} from '../../common/types';
 
-/**BaseFilterOptions, 
+/**BaseFilterOptions,
  * Interface générique pour un repository
  */
 export interface IBaseRepository<
@@ -9,14 +13,15 @@ export interface IBaseRepository<
   UpdateInput,
   WhereInput,
   OrderByInput,
-  FilterOptions extends BaseFilterOptions
+  FilterOptions extends BaseFilterOptions,
 > {
   findAll(
     paginationOptions?: Partial<PaginationOptions>,
     filterOptions?: FilterOptions,
-    select?: any
+    select?: any,
   ): Promise<PaginatedResult<T>>;
   findById(id: string, select?: any): Promise<T | null>;
+  findByEmail(id: string, select?: any): Promise<T | null>;
   create(data: CreateInput): Promise<T>;
   update(id: string, data: UpdateInput): Promise<T>;
   delete(id: string): Promise<T>;

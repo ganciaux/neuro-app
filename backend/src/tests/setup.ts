@@ -4,7 +4,9 @@ import { UserTestData, UserRole } from '../models/user.model';
 import { logger } from '../logger/logger';
 import { generateToken } from '../services/auth.service';
 import { prisma } from '../config/database';
-import { userService } from '../services/user.service';
+import { Container } from '../container';
+
+const userService = Container.getUserService();
 
 beforeAll(async () => {
   logger.info('setup: JEST: 🛠️ Setting up before all tests');
@@ -31,7 +33,7 @@ export async function createTestUser(
   token: boolean = true,
 ): Promise<UserTestData> {
   let authToken: string = '';
-  const user = await userService.createUser(email, password, name, role);
+  const user = await userService.create(email, password, name, role, false);
 
   if (!user) {
     throw new Error('User not created');
