@@ -21,7 +21,6 @@ export interface IBaseRepository<
     select?: any,
   ): Promise<PaginatedResult<T>>;
   findById(id: string, select?: any): Promise<T | null>;
-  findByEmail(id: string, select?: any): Promise<T | null>;
   create(data: CreateInput): Promise<T>;
   update(id: string, data: UpdateInput): Promise<T>;
   delete(id: string): Promise<T>;

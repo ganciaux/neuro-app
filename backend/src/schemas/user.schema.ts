@@ -84,3 +84,32 @@ export const UserCreateSchema = z.object({
   /** User name (optional). */
   name: z.string().optional(),
 });
+
+/**
+ * Schema for validating user search.
+ * - Validates page, pageSize, email, role, and name (optional).
+ */
+export const UserSearchSchema = z.object({
+  /** Page number. */
+  page: z
+    .string()
+    .regex(/^\d+$/, 'Page must be a number.')
+    .transform((val) => parseInt(val, 10))
+    .refine((val) => val > 0, 'Page must be greater than 0.'),
+  /** Page size. */
+  pageSize: z
+    .string()
+    .regex(/^\d+$/, 'Page size must be a number.')
+    .transform((val) => parseInt(val, 10))
+    .refine((val) => val > 0, 'Page size must be greater than 0.'),
+  /** User email (optional). */
+  email: z.string().email('Invalid email format.').optional(),
+  /** User role (optional). */
+  role: z
+    .nativeEnum(UserRole, {
+      errorMap: () => ({ message: "The role must be either 'USER' or 'ADMIN'." }),
+    })
+    .optional(),
+  /** User name (optional). */
+  name: z.string().optional(),
+});

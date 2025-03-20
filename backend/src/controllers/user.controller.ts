@@ -3,6 +3,7 @@ import { logger } from '../logger/logger';
 import {
   UserCreateSchema,
   UserIdSchema,
+  UserSearchSchema,
   UserUpdateSchema,
 } from '../schemas/user.schema';
 import { UserCreateZodDTO, UserUpdateZodDTO } from '../dtos/user.dto';
@@ -14,9 +15,9 @@ import {
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
-//import { isValidUserId, findUserPublicById, createUser, updateUser, deleteUser, toUserPublic, findAll, userExistsById } from '../services/user.service';
 import { UserFilterOptions, UserRole } from '../models/user.model';
 import { Container } from '../container';
+import { PaginationOptions } from '../common/types';
 
 const userService = Container.getUserService();
 
@@ -25,21 +26,23 @@ const userService = Container.getUserService();
  * - Fetches the public profiles of all users.
  * - Returns the list of users.
  */
-export const findAllUsersHandler = asyncHandler(
+export const findAllHandler = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: findAllUsersHandler: [req:${request.requestId}]: findAllUsersHandler`,
+      `user.controller: findAllHandler: [req:${request.requestId}]: findAllHandler`,
     );
 
-    const paginationOptions = {
-      page: parseInt(request.query.page as string, 10) || 1,
-      pageSize: parseInt(request.query.pageSize as string, 10) || 10,
+    const { page, pageSize, name, email, role } = UserSearchSchema.parse(request.query);
+    
+    const paginationOptions: PaginationOptions = {
+      page,
+      pageSize,
     };
 
     const filterOptions: UserFilterOptions = {
-      name: request.query.name as string,
-      email: request.query.email as string,
-      role: request.query.role as UserRole,
+      name,
+      email,
+      role,
     };
 
     const users = await userService.findAll(paginationOptions, filterOptions);

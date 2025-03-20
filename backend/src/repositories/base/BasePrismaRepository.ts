@@ -18,15 +18,14 @@ export abstract class BasePrismaRepository<
   OrderByInput,
   FilterOptions extends BaseFilterOptions,
 > implements
-    IBaseRepository<
-      T,
-      CreateInput,
-      UpdateInput,
-      WhereInput,
-      OrderByInput,
-      FilterOptions
-    >
-{
+  IBaseRepository<
+    T,
+    CreateInput,
+    UpdateInput,
+    WhereInput,
+    OrderByInput,
+    FilterOptions
+  > {
   /** Default page size. */
   protected readonly DEFAULT_PAGE_SIZE = 10;
   /** Maximum page size. */
@@ -46,14 +45,7 @@ export abstract class BasePrismaRepository<
     protected modelName: string,
     protected allowedSortFields: string[],
     protected searchFields: string[] = [],
-  ) {}
-
-  /**
-   * Finds an item by email.
-   */
-  async findByEmail(email: string, select?: any): Promise<T | null> {
-    return this.prismaModel.findUnique({ where: { email }, select });
-  }
+  ) { }
 
   /**
    * Handles Prisma errors uniformly.

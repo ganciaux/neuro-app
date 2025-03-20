@@ -20,7 +20,7 @@ export class AppError extends Error {
    * @param message - The error message.
    * @param statusCode - The HTTP status code.
    */
-  constructor(message: string | undefined, statusCode: number) {
+  constructor(message: string | undefined, statusCode: number, details?: any) {
     super(message);
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';

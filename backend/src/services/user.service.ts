@@ -1,13 +1,26 @@
 import { User } from '@prisma/client';
-import { UserFilterOptions, UserPublic, UserRole } from '../models/user.model';
-import { IUserRepository } from '../repositories/user/IUserRepository';
-import { UserValidator } from '../validators/user.validator';
 import bcrypt from 'bcryptjs';
+import { UserFilterOptions, UserPublic, UserRole } from '../models/user.model';
+import { UserValidator } from '../validators/user.validator';
 import { UserUpdateDTO } from '../dtos/user.dto';
-import { PaginationOptions } from '../common/types';
+import { PaginatedResult, PaginationOptions } from '../common/types';
+import { IUserRepository } from '../repositories/user/IUserRepository';
 
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
+
+  /**
+   * Validates new user data
+   */
+  private validateNewUserData(email: string, password: string): void {
+    if (!this.isValidEmail(email)) {
+      throw new Error('Invalid email format');
+    }
+
+    if (!this.isPasswordStrongEnough(password)) {
+      throw new Error('Password must be at least 6 characters long');
+    }
+  }
 
   /**
    * Checks if a user ID is valid
@@ -32,19 +45,11 @@ export class UserService {
   }
 
   async existsById(userId: string): Promise<boolean> {
-    return !!this.userRepository.findById(userId);
+    return this.userRepository.existsById(userId);
   }
-  /**
-   * Validates new user data
-   */
-  private validateNewUserData(email: string, password: string): void {
-    if (!this.isValidEmail(email)) {
-      throw new Error('Invalid email format');
-    }
 
-    if (!this.isPasswordStrongEnough(password)) {
-      throw new Error('Password must be at least 6 characters long');
-    }
+  async existsByEmail(email: string): Promise<boolean> {
+    return this.userRepository.existsByEmail(email);
   }
 
   /**
@@ -193,11 +198,10 @@ export class UserService {
   async findAll(
     paginationOptions?: Partial<PaginationOptions>,
     filterOptions?: UserFilterOptions,
-  ) {
-    const users = await this.userRepository.findAll(
+  ): Promise<PaginatedResult<User>> {
+    return this.userRepository.findAll(
       paginationOptions,
       filterOptions,
     );
-    return users;
   }
 }

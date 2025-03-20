@@ -3,6 +3,7 @@ import { PrismaUserRepository } from './repositories/user/PrismaUserRepository';
 import { UserService } from './services/user.service';
 import { prisma } from './config/database';
 import { IUserRepository } from './repositories/user/IUserRepository';
+import { AuthService } from './services/auth.service';
 
 /**
  * Container class for dependency injection and service/repository management.
@@ -14,6 +15,8 @@ export class Container {
   private static userRepository: IUserRepository;
 
   private static userService: UserService;
+
+  private static authService: AuthService;
 
   /**
    * Returns a singleton instance of PrismaClient.
@@ -60,4 +63,18 @@ export class Container {
     }
     return Container.userService;
   }
+
+    /**
+   * Returns a singleton instance of AuthService.
+   * If the instance does not exist, it initializes it with a new AuthService,
+   * injecting the singleton instance of UserService.
+   *
+   * @returns {AuthService} The singleton instance of AuthService.
+   */
+    static getAuthService(): AuthService {
+      if (!Container.authService) {
+        Container.authService = new AuthService(Container.getUserService());
+      }
+      return Container.authService;
+    }
 }
