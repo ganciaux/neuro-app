@@ -15,16 +15,21 @@ export class AppError extends Error {
   /** Indicates whether the error is operational (expected) or not. */
   isOperational: boolean;
 
+  /** Additional error details. */
+  details: any;
+
   /**
    * Creates a new `AppError` instance.
    * @param message - The error message.
    * @param statusCode - The HTTP status code.
+   * @param details - Additional error details.
+   * @param isOperational - Whether the error is operational.
    */
-  constructor(message: string | undefined, statusCode: number, details?: any) {
+  constructor(message: string | undefined, statusCode: number, details?: any, isOperational = true) {
     super(message);
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-    this.isOperational = true;
+    this.isOperational = isOperational;
 
     // Capture the stack trace for debugging
     Error.captureStackTrace(this, this.constructor);

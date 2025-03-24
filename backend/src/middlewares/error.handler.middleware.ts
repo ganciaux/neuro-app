@@ -3,6 +3,7 @@ import { logger } from '../logger/logger';
 import { APP_ENV } from '../config/environment';
 import { ZodError } from 'zod';
 import { PrismaError } from '../errors/prisma.errors';
+import { UserError } from '../errors/user.errors';
 
 export function handleProcessErrors() {
   process.on('uncaughtException', (error) => {
@@ -71,7 +72,13 @@ export const errorHandler = (
         message: error.message,
         prismaCode: error.prismaCode,
       });
-
+    } else if (error instanceof UserError) {
+      response.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+        details: error.details,
+      });
+    } else {
       sendErrorProd(error, request, response);
     }
   }

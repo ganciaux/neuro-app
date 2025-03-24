@@ -1,6 +1,16 @@
 import { AppError } from './app.error';
 
 /**
+ * Base class for all user-related errors.
+ * Extends the `AppError` class.
+ */
+export class UserError extends AppError {
+  constructor(message: string, statusCode: number, details?: any) {
+    super(message, statusCode, details);
+  }
+}
+
+/**
  * Error thrown when fetching a user by email fails.
  * - Extends `AppError`.
  * - Status code: 500 (Internal Server Error).
