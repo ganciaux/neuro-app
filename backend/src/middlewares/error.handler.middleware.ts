@@ -4,6 +4,7 @@ import { APP_ENV } from '../config/environment';
 import { ZodError } from 'zod';
 import { PrismaError } from '../errors/prisma.errors';
 import { UserError } from '../errors/user.errors';
+import { AuthError } from '../errors/auth.errors';
 
 export function handleProcessErrors() {
   process.on('uncaughtException', (error) => {
@@ -78,6 +79,12 @@ export const errorHandler = (
         message: error.message,
         details: error.details,
       });
+    } else if (error instanceof AuthError) {
+      response.status(error.statusCode).json({
+        status: 'error',
+          message: error.message,
+          details: error.details,
+        });
     } else {
       sendErrorProd(error, request, response);
     }

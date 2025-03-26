@@ -10,7 +10,6 @@ import { UserCreateZodDTO, UserUpdateZodDTO } from '../dtos/user.dto';
 
 import { asyncHandler } from '../middlewares/async.handler.middleware';
 import {
-  InvalidUserIdError,
   UserCreationFailedError,
   UserNotFoundError,
   UserUpdateFailedError,
@@ -26,10 +25,10 @@ const userService = Container.getUserService();
  * - Fetches the public profiles of all users.
  * - Returns the list of users.
  */
-export const findAllHandler = asyncHandler(
+export const findAll = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: findAllHandler: [req:${request.requestId}]: findAllHandler`,
+      `user.controller: findAll: [req:${request.requestId}]: findAllHandler`,
     );
 
     const { page, pageSize, name, email, role } = UserSearchSchema.parse(request.query);
@@ -52,23 +51,33 @@ export const findAllHandler = asyncHandler(
 );
 
 /**
+ * Retrieves all public users.
+ * - Fetches the public profiles of all users.
+ * - Returns the list of users.
+ */
+export const findAllPublic = asyncHandler(
+  async (request: Request, response: Response) => {
+    logger.info(
+      `user.controller: findAllPublic: [req:${request.requestId}]: findAllPublic`,
+    );
+    throw new Error('Method not implemented.');
+    return;
+  },
+);
+
+/**
  * Retrieves the profile of the authenticated user.
  * - Validates the user ID.
  * - Fetches the user's public profile.
  * - Returns the user's profile.
  */
-export const findMeHandler = asyncHandler(
+export const findMe = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: findMeHandler: [req:${request.requestId}]: findMeHandler`,
+      `user.controller: findMe: [req:${request.requestId}]: findMe`,
     );
 
     const { userId } = UserIdSchema.parse(request.body);
-    //const userId = request.user?.id;
-
-    if (!userId) {
-      throw new UserNotFoundError();
-    }
 
     const user = await userService.findByIdToPublic(userId);
 
@@ -86,22 +95,13 @@ export const findMeHandler = asyncHandler(
  * - Fetches the user's public profile.
  * - Returns the user's profile.
  */
-export const findUserByIdHandler = asyncHandler(
+export const findById = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: findUserByIdHandler: [req:${request.requestId}]: findUserByIdHandler`,
+      `user.controller: findById: [req:${request.requestId}]: findById`,
     );
 
     const { userId } = UserIdSchema.parse(request.params);
-    //const userId = request.params.id;
-
-    if (!userService.isValidUserId(userId)) {
-      throw new InvalidUserIdError();
-    }
-
-    if (await userService.existsById(userId)) {
-      throw new UserNotFoundError(userId);
-    }
 
     const user = await userService.findById(userId);
 
@@ -119,17 +119,13 @@ export const findUserByIdHandler = asyncHandler(
  * - Fetches the user's public profile.
  * - Returns the user's public profile.
  */
-export const findUserPublicByIdHandler = asyncHandler(
+export const findPublicById  = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: findUserPublicByIdHandler: [req:${request.requestId}]: findUserPublicByIdHandler`,
+      `user.controller: findPublicById: [req:${request.requestId}]: findPublicById`,
     );
     const { userId } = UserIdSchema.parse(request.params);
     //const userId = request.params.id;
-
-    if (!userId) {
-      throw new UserNotFoundError();
-    }
 
     const user = await userService.findByIdToPublic(userId);
 
@@ -142,30 +138,17 @@ export const findUserPublicByIdHandler = asyncHandler(
 );
 
 /**
- * Retrieves all public users.
- * - Fetches the public profiles of all users.
- * - Returns the list of users.
- */
-export const findAllPublicHandler = asyncHandler(
-  async (request: Request, response: Response) => {
-    logger.info(
-      `user.controller: findAllPublicHandler: [req:${request.requestId}]: findAllPublicHandler`,
-    );
-    return;
-  },
-);
-
-/**
  * Retrieves users by role  .
  * - Validates the role.
  * - Fetches the users matching the role.
  * - Returns the list of users.
  */
-export const findUsersByRoleHandler = asyncHandler(
+export const findByRole = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: findUsersByRoleHandler: [req:${request.requestId}]: findUsersByRoleHandler`,
+      `user.controller: findByRole: [req:${request.requestId}]: findByRole`,
     );
+    throw new Error('Method not implemented.');
     return;
   },
 );
@@ -176,11 +159,12 @@ export const findUsersByRoleHandler = asyncHandler(
  * - Fetches the user matching the email.
  * - Returns the user's public profile.
  */
-export const findUserByEmailHandler = asyncHandler(
+export const findByEmail = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
       `user.controller: findUserByEmailHandler: [req:${request.requestId}]: findUserByEmailHandler`,
     );
+    throw new Error('Method not implemented.');
     return;
   },
 );
@@ -191,10 +175,10 @@ export const findUserByEmailHandler = asyncHandler(
  * - Checks if the user exists.
  * - Returns true if the user exists, false otherwise.
  */
-export const userExistsByEmailHandler = asyncHandler(
+export const existsByEmail = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: userExistsByEmailHandler: [req:${request.requestId}]: userExistsByEmailHandler`,
+      `user.controller: existsByEmail: [req:${request.requestId}]: existsByEmail`,
     );
     return;
   },
@@ -206,10 +190,10 @@ export const userExistsByEmailHandler = asyncHandler(
  * - Fetches the users matching the search term.
  * - Returns the list of users.
  */
-export const searchUsersHandler = asyncHandler(
+export const search = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: searchUsersHandler: [req:${request.requestId}]: searchUsersHandler`,
+      `user.controller: search: [req:${request.requestId}]: search`,
     );
 
     const paginationOptions = {
@@ -235,10 +219,10 @@ export const searchUsersHandler = asyncHandler(
  * - Checks if the email already exists.
  * - Creates the user and returns their public profile.
  */
-export const createUserHandler = asyncHandler(
+export const create = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: createUserHandler: [req:${request.requestId}]: createUserHandler`,
+      `user.controller: create: [req:${request.requestId}]: create`,
     );
 
     const { email, password, name, role }: UserCreateZodDTO =
@@ -262,13 +246,11 @@ export const createUserHandler = asyncHandler(
  * - Updates the user's details.
  * - Returns the updated user's public profile.
  */
-export const updateUserHandler = asyncHandler(
+export const update = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: updateUser: [req:${request.requestId}]: updateUser`,
+      `user.controller: update: [req:${request.requestId}]: update`,
     );
-    //const userId = request.params.id;
-    //const { name, email, role } = request.body;
 
     const { userId } = UserIdSchema.parse(request.params);
     const { name, email, role }: UserUpdateZodDTO = UserUpdateSchema.parse(
@@ -293,11 +275,12 @@ export const updateUserHandler = asyncHandler(
  * - Updates the user's password.
  * - Returns the updated user's public profile.
  */
-export const updateUserPasswordHandler = asyncHandler(
+export const updatePassword = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: updateUserPasswordHandler: [req:${request.requestId}]: updateUserPasswordHandler`,
+      `user.controller: updatePassword: [req:${request.requestId}]: updatePassword`,
     );
+    throw new Error('Method not implemented.');
     return;
   },
 );
@@ -308,11 +291,12 @@ export const updateUserPasswordHandler = asyncHandler(
  * - Deactivates the user.
  * - Returns a 204 status code (No Content).
  */
-export const deactivateUserHandler = asyncHandler(
+export const deactivate = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: deactivateUserHandler: [req:${request.requestId}]: deactivateUserHandler`,
+      `user.controller: deactivate: [req:${request.requestId}]: deactivate`,
     );
+    throw new Error('Method not implemented.');
     return;
   },
 );
@@ -323,11 +307,12 @@ export const deactivateUserHandler = asyncHandler(
  * - Reactivates the user.
  * - Returns a 204 status code (No Content).
  */
-export const reactivateUserHandler = asyncHandler(
+export const reactivate = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: reactivateUserHandler: [req:${request.requestId}]: reactivateUserHandler`,
+      `user.controller: reactivate: [req:${request.requestId}]: reactivate`,
     );
+    throw new Error('Method not implemented.');
     return;
   },
 );
@@ -338,22 +323,13 @@ export const reactivateUserHandler = asyncHandler(
  * - Deletes the user.
  * - Returns a 204 status code (No Content).
  */
-export const deleteUserHandler = asyncHandler(
+export const remove = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
-      `user.controller: deleteUser: [req:${request.requestId}]: deleteUser`,
+      `user.controller: remove: [req:${request.requestId}]: remove`,
     );
-    //const userId = request.params.id;
 
     const { userId } = UserIdSchema.parse(request.body);
-
-    if (!userService.isValidUserId(userId)) {
-      throw new InvalidUserIdError();
-    }
-
-    if (await userService.existsById(userId)) {
-      throw new UserNotFoundError(userId);
-    }
 
     const user = await userService.delete(userId);
 

@@ -191,9 +191,18 @@ export abstract class BasePrismaRepository<
    * Creates a new item.
    */
   async create(data: CreateInput): Promise<T> {
-    return this.prismaModel.create({ data });
+    try {
+      return this.prismaModel.create({ data });
+    } catch (error) {
+      this.handlePrismaError(
+        error,
+        `Failed to create ${this.modelName}`,
+        Error,
+        `Failed to create ${this.modelName}`,
+      );
+    }
   }
-
+  
   /**
    * Updates an item.
    */

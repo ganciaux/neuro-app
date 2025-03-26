@@ -12,10 +12,10 @@ export class UserError extends AppError {
 
 /**
  * Error thrown when fetching a user by email fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserFetchByEmailFailedError extends AppError {
+export class UserFetchByEmailFailedError extends UserError {
   constructor(
     email: string,
     message: string = 'Failed to fetch user by email',
@@ -27,10 +27,10 @@ export class UserFetchByEmailFailedError extends AppError {
 
 /**
  * Error thrown when fetching a user by ID fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserFetchByIdFailedError extends AppError {
+export class UserFetchByIdFailedError extends UserError {
   constructor(id: string, message: string = 'Failed to fetch user by id') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to fetch user by id ${id}`;
@@ -39,10 +39,10 @@ export class UserFetchByIdFailedError extends AppError {
 
 /**
  * Error thrown when fetching a user by criteria fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserFetchFailedError extends AppError {
+export class UserFetchFailedError extends UserError {
   constructor(criteria: string, message: string = 'Failed to fetch user') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to fetch user ${criteria}`;
@@ -51,10 +51,10 @@ export class UserFetchFailedError extends AppError {
 
 /**
  * Error thrown when a user email already exists.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 409 (Conflict).
  */
-export class UserEmailAlreadyExistsError extends AppError {
+export class UserEmailAlreadyExistsError extends UserError {
   constructor(email: string, message: string = 'Email already exists') {
     super(message, 409); // 409 Conflict
     this.message = `Email already exists ${email}`;
@@ -63,10 +63,10 @@ export class UserEmailAlreadyExistsError extends AppError {
 
 /**
  * Error thrown when user creation fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserCreationFailedError extends AppError {
+export class UserCreationFailedError extends UserError {
   constructor(email: string, message: string = 'Failed to create user') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to create user ${email}`;
@@ -75,10 +75,10 @@ export class UserCreationFailedError extends AppError {
 
 /**
  * Error thrown when user registration fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserRegisterFailedError extends AppError {
+export class UserRegisterFailedError extends UserError {
   constructor(email: string, message: string = 'Failed to register user') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to register user ${email}`;
@@ -87,10 +87,10 @@ export class UserRegisterFailedError extends AppError {
 
 /**
  * Error thrown when a user is not found by email.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 404 (Not Found).
  */
-export class UserNotFoundEmailError extends AppError {
+export class UserNotFoundEmailError extends UserError {
   constructor(email: string, message: string = 'User not found') {
     super(message, 404); // 404 Not Found
     this.message = `User not found ${email}`;
@@ -99,10 +99,10 @@ export class UserNotFoundEmailError extends AppError {
 
 /**
  * Error thrown when a user is not found.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 404 (Not Found).
  */
-export class UserNotFoundError extends AppError {
+export class UserNotFoundError extends UserError {
   constructor(message: string = 'User not found') {
     super(message, 404); // 404 Not Found
   }
@@ -110,10 +110,10 @@ export class UserNotFoundError extends AppError {
 
 /**
  * Error thrown when fetching all users fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserFindAllFailedError extends AppError {
+export class UserFindAllFailedError extends UserError {
   constructor(message: string = 'Failed to get users') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to get users`;
@@ -122,10 +122,10 @@ export class UserFindAllFailedError extends AppError {
 
 /**
  * Error thrown when counting users fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserCountFailedError extends AppError {
+export class UserCountFailedError extends UserError {
   constructor(message: string = 'Failed to count user') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to count user`;
@@ -134,10 +134,10 @@ export class UserCountFailedError extends AppError {
 
 /**
  * Error thrown when updating a user fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 400 (Bad Request).
  */
-export class UserUpdateFailedError extends AppError {
+export class UserUpdateFailedError extends UserError {
   constructor(userId: string, message: string = 'Failed to update user') {
     super(message, 400); // 400 Bad Request
   }
@@ -145,10 +145,10 @@ export class UserUpdateFailedError extends AppError {
 
 /**
  * Error thrown when deleting a user fails.
- * - Extends `AppError`.
+ * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
  */
-export class UserDeletionFailedError extends AppError {
+export class UserDeletionFailedError extends UserError {
   constructor(userId: string, message: string = 'Failed to delete user') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to delete user ${userId}`;
@@ -156,12 +156,24 @@ export class UserDeletionFailedError extends AppError {
 }
 
 /**
- * Error thrown when the user ID format is invalid.
- * - Extends `AppError`.
+ * Error thrown when the user password is incorrect.
+ * - Extends `UserError`.
+ * - Status code: 401 (Unauthorized).
+ */
+export class UserPasswordIncorrectError extends UserError {
+  constructor(message: string = 'Incorrect password') {
+    super(message, 401); // 401 Unauthorized
+  }
+}
+
+/**
+ * Error thrown when user data is invalid.
+ * - Extends `UserError`.
  * - Status code: 400 (Bad Request).
  */
-export class InvalidUserIdError extends AppError {
-  constructor(message: string = 'Invalid user ID format') {
+export class UserInvalidDataError extends UserError {
+  constructor(message: string = 'Invalid user data') {
     super(message, 400); // 400 Bad Request
   }
 }
+

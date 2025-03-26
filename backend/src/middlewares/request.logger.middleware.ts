@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { format } from 'date-fns';
 import { logger } from '../logger/logger';
 
 export function requestLogger(

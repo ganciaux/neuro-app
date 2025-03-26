@@ -5,6 +5,7 @@ import { UserValidator } from '../validators/user.validator';
 import { UserUpdateDTO } from '../dtos/user.dto';
 import { PaginatedResult, PaginationOptions } from '../common/types';
 import { IUserRepository } from '../repositories/user/IUserRepository';
+import { UserEmailAlreadyExistsError, UserInvalidDataError, UserNotFoundError, UserPasswordIncorrectError } from '../errors/user.errors';
 
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
@@ -13,35 +14,13 @@ export class UserService {
    * Validates new user data
    */
   private validateNewUserData(email: string, password: string): void {
-    if (!this.isValidEmail(email)) {
-      throw new Error('Invalid email format');
+    if (!UserValidator.validateEmail(email)) {
+      throw new UserInvalidDataError('Invalid email format');
     }
 
-    if (!this.isPasswordStrongEnough(password)) {
-      throw new Error('Password must be at least 6 characters long');
+    if (UserValidator.validatePasswordStrength(password)) {
+      throw new UserInvalidDataError('Password must be at least 6 characters long');
     }
-  }
-
-  /**
-   * Checks if a user ID is valid
-   */
-  isValidUserId(userId: string): boolean {
-    return !!userId && UserValidator.validateUserId(userId);
-  }
-
-  /**
-   * Validates an email address
-   */
-  isValidEmail(email: string): boolean {
-    return !!email && UserValidator.validateEmail(email);
-  }
-
-  /**
-   * Checks if a password is strong enough
-   */
-  isPasswordStrongEnough(password: string): boolean {
-    const strongPasswordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
-    return strongPasswordRegex.test(password);
   }
 
   async existsById(userId: string): Promise<boolean> {
@@ -66,7 +45,7 @@ export class UserService {
 
     const userExists = await this.userRepository.existsByEmail(email);
     if (userExists) {
-      throw new Error('Email already in use');
+      throw new UserEmailAlreadyExistsError('Email already in use');
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -86,10 +65,6 @@ export class UserService {
    * Updates a user
    */
   async update(userId: string, data: Partial<UserUpdateDTO>): Promise<User> {
-    if (!this.isValidUserId(userId)) {
-      throw new Error('Invalid user ID');
-    }
-
     return this.userRepository.update(userId, data);
   }
 
@@ -97,10 +72,6 @@ export class UserService {
    * Delete a user
    */
   async delete(userId: string): Promise<User> {
-    if (!this.isValidUserId(userId)) {
-      throw new Error('Invalid user ID');
-    }
-
     return this.userRepository.delete(userId);
   }
 
@@ -112,13 +83,10 @@ export class UserService {
     currentPassword: string,
     newPassword: string,
   ): Promise<User> {
-    if (!this.isValidUserId(userId)) {
-      throw new Error('Invalid user ID');
-    }
-
+    
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new UserNotFoundError('User not found');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -126,7 +94,7 @@ export class UserService {
       user.passwordHash,
     );
     if (!isPasswordValid) {
-      throw new Error('Current password is incorrect');
+      throw new UserPasswordIncorrectError('Current password is incorrect');
     }
 
     const salt = await bcrypt.genSalt(10);

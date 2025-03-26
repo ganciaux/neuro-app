@@ -68,13 +68,6 @@ export class PrismaUserRepository extends BasePrismaRepository<
         }
     }
 
-    async findAll(paginationOptions?: Partial<PaginationOptions>, filterOptions?: UserFilterOptions): Promise<PaginatedResult<User>> {
-        return this.findAll(
-            paginationOptions,
-            filterOptions,
-        ) as Promise<PaginatedResult<User>>;
-    }
-
     async findByRole(role: UserRole, pagination?: Partial<PaginationOptions>): Promise<PaginatedResult<User>> {
         throw new Error('Method not implemented.');
     }

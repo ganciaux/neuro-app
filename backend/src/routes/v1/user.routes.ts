@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { findMeHandler, findUserByIdHandler, findUserPublicByIdHandler, findAllPublicHandler, findUserByEmailHandler, userExistsByEmailHandler, findUsersByRoleHandler, findAllUsersHandler, searchUsersHandler, createUserHandler, updateUserHandler, updateUserPasswordHandler, deactivateUserHandler, reactivateUserHandler, deleteUserHandler } from '../../controllers/user.controller';
+import { findMe, findById, findPublicById, findAllPublic, findByEmail, existsByEmail, findByRole, search, create, update, updatePassword, deactivate, reactivate, remove, findAll } from '../../controllers/user.controller';
 import { adminGuard, authGuard } from '../../middlewares/auth.middleware';
 
 /**
@@ -13,42 +13,42 @@ const router = Router();
  * - GET /
  * - Requires authentication and admin privileges.
  */
-router.get('/', authGuard, adminGuard, findAllUsersHandler);
+router.get('/', authGuard, adminGuard, findAll);
 
 /**
  * Route to fetch the authenticated user's profile.
  * - GET /me
  * - Requires authentication.
  */
-router.get('/me', authGuard, findMeHandler);
+router.get('/me', authGuard, findMe);
 
 /**
  * Route to fetch a user by ID.
  * - GET /:id
  * - Requires authentication and admin privileges.
  */
-router.get('/:id', authGuard, adminGuard, findUserByIdHandler);
+router.get('/:id', authGuard, adminGuard, findById);
 
 /**
  * Route to fetch public user data by ID.
  * - GET /:id/public
  * - Requires authentication.
  */
-router.get('/:id/public', authGuard, findUserPublicByIdHandler);
+router.get('/:id/public', authGuard, findPublicById);
 
 /**
  * Route to fetch all public user data.
  * - GET /public
  * - Requires authentication.
  */
-router.get('/public', authGuard, findAllPublicHandler);
+router.get('/public', authGuard, findAllPublic);
 
 /**
  * Route to fetch users by role.
  * - GET /role/:role
  * - Requires authentication and admin privileges.
  */
-router.get('/role/:role', authGuard, adminGuard, findUsersByRoleHandler);
+router.get('/role/:role', authGuard, adminGuard, findByRole);
 
 
 /**
@@ -56,63 +56,63 @@ router.get('/role/:role', authGuard, adminGuard, findUsersByRoleHandler);
  * - GET /email/:email
  * - Requires authentication and admin privileges.
  */
-router.get('/email/:email', authGuard, adminGuard, findUserByEmailHandler);
+router.get('/email/:email', authGuard, adminGuard, findByEmail);
 
 /**
  * Route to check if an email is already used.
  * - GET /email/:email/exists
  * - Requires authentication and admin privileges.
  */
-router.get('/email/:email/exists', authGuard, adminGuard, userExistsByEmailHandler);
+router.get('/email/:email/exists', authGuard, adminGuard, existsByEmail);
 
 /**
  * Route to search users.
  * - GET /search
  * - Requires authentication and admin privileges.
  */
-router.get('/search', authGuard, adminGuard, searchUsersHandler);
+router.get('/search', authGuard, adminGuard, search);
 
 /**
  * Route to create a new user.
  * - POST /
  * - Requires authentication and admin privileges.
  */
-router.post('/', authGuard, adminGuard, createUserHandler);
+router.post('/', authGuard, adminGuard, create);
 
 /**
  * Route to update a user by ID.
  * - PUT /:id
  * - Requires authentication and admin privileges.
  */
-router.put('/:id', authGuard, adminGuard, updateUserHandler);
+router.put('/:id', authGuard, adminGuard, update);
 
 /**
  * Route to update a user's password.
  * - PUT /:id/password
  * - Requires authentication.
  */
-router.put('/:id/password', authGuard, updateUserPasswordHandler);
+router.put('/:id/password', authGuard, updatePassword);
 
 /**
  * Route to deactivate a user.
  * - PUT /:id/deactivate
  * - Requires authentication and admin privileges.
  */
-router.put('/:id/deactivate', authGuard, adminGuard, deactivateUserHandler);
+router.put('/:id/deactivate', authGuard, adminGuard, deactivate);
 
 /**
  * Route to reactivate a user.
  * - PUT /:id/reactivate
  * - Requires authentication and admin privileges.
  */
-router.put('/:id/reactivate', authGuard, adminGuard, reactivateUserHandler);
+router.put('/:id/reactivate', authGuard, adminGuard, reactivate);
 
 /**
  * Route to delete a user by ID.
  * - DELETE /:id
  * - Requires authentication and admin privileges.
  */
-router.delete('/:id', authGuard, adminGuard, deleteUserHandler);
+router.delete('/:id', authGuard, adminGuard, remove);
 
 /**
  * Exports the user router.
