@@ -1,13 +1,18 @@
 import { z } from 'zod';
-import { UserCreateSchema, UserUpdateSchema } from '../schemas/user.schema';
+import { UserCreateSchema, UserFindAllSchema, UserOrderBySchema, UserPaginationSchema, UserSearchSchema, UserUpdateSchema } from '../schemas/user.schema';
 import { Role } from '@prisma/client';
-/**
- * Represents the data transfer object (DTO) for creating a user.
- * - Derived from `UserCreateSchema`.
- */
+
 export type UserCreateZodDTO = z.infer<typeof UserCreateSchema>;
 
 export type UserUpdateZodDTO = z.infer<typeof UserUpdateSchema>;
+
+export type UserOrderByZodDTO = z.infer<typeof UserOrderBySchema>;
+
+export type UserPaginationZodDTO = z.infer<typeof UserPaginationSchema>;
+
+export type UserSearchZodDTO = z.infer<typeof UserSearchSchema>;
+
+export type UserFindAllZodDTO = z.infer<typeof UserFindAllSchema>;
 
 export type UserCreateDTO = {
     name?: string;

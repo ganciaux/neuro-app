@@ -29,11 +29,13 @@ export interface PaginatedResult<T> {
 /**
  * Base filtering options for queries.
  */
-export interface BaseFilterOptions {
-    /** Field to sort by. */
+export interface SortingOptions {
     sortBy?: string;
-    /** Sort order ('asc' or 'desc'). */
     sortOrder?: 'asc' | 'desc';
-    /** Search term. */
+}
+
+export interface SearchOptions {
     searchTerm?: string;
 }
+
+export type QueryOptions = SortingOptions & SearchOptions;  

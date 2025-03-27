@@ -1,6 +1,6 @@
 import { Role, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { UserOrderByInput, UserPublic } from '../models/user.model';
+import { UserOrderByInput, UserPublicDto, UserQueryOptions } from '../models/user.model';
 import { UserValidator } from '../validators/user.validator';
 import { UserUpdateDTO } from '../dtos/user.dto';
 import { PaginatedResult, PaginationOptions } from '../common/types';
@@ -10,7 +10,8 @@ import { UserMapper } from '../mappers/UserMapper';
 
 export class UserService {
   private toPublic = UserMapper.toPublic
-  
+  private toPublicList = UserMapper.toPublicList
+
   constructor(private userRepository: IUserRepository) {}
 
   /**
@@ -112,7 +113,7 @@ export class UserService {
   /**
    * Converts a user to a public version
    */
-  toUserPublic(user: User): UserPublic {
+  toUserPublic(user: User): UserPublicDto {
     return this.toPublic(user);
   }
 
@@ -154,7 +155,7 @@ export class UserService {
   /**
    * Finds a user by user id
    */
-  async findByIdToPublic(userId: string): Promise<UserPublic | null> {
+  async findByIdToPublic(userId: string): Promise<UserPublicDto | null> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       return null;
@@ -166,14 +167,39 @@ export class UserService {
    * Finds all users
    */
   async findAll(
-    paginationOptions?: Partial<PaginationOptions>,
     orderBy?: UserOrderByInput,
-    select?: any,
-  ): Promise<PaginatedResult<User>> {
+    paginationOptions?: Partial<PaginationOptions>,
+    select?: any
+  ): Promise<PaginatedResult<User> | User[]> {
     return this.userRepository.findAll(
-      paginationOptions,
       orderBy,
+      paginationOptions,
       select,
     );
+  }
+
+  async findAllToPublic(
+    orderBy?: UserOrderByInput,
+    paginationOptions?: Partial<PaginationOptions>,
+    select?: any
+  ): Promise<PaginatedResult<UserPublicDto> | UserPublicDto[]> {
+    const users = await this.userRepository.find(undefined, paginationOptions, select, orderBy);
+    if (Array.isArray(users)) {
+      return this.toPublicList(users);
+    } else {
+      return {
+        ...users,
+        data: this.toPublicList(users.data)
+      };
+    }
+  }
+
+  async search(
+    queryOptions?: UserQueryOptions,
+    orderBy?: UserOrderByInput,
+    paginationOptions?: Partial<PaginationOptions>,
+    select?: any
+  ): Promise<PaginatedResult<User> | User[]> {
+    return this.userRepository.search(queryOptions, orderBy, paginationOptions,select);
   }
 }

@@ -17,6 +17,15 @@ export const PaginationSchema = z.object({
     .default("10"),
 });
 
-export function createSearchSchema<T extends z.ZodRawShape>(additionalFields: T) {
-  return PaginationSchema.extend(additionalFields);
+export function createPaginatedSchema<T extends z.ZodRawShape>(fields: T) {
+  return PaginationSchema.extend(fields).transform((data): {
+    paginationOptions: { page: number; pageSize: number };
+    filters: z.infer<z.ZodObject<T>>;
+  } => {
+    const { page, pageSize, ...filters } = data;
+    return {
+      paginationOptions: { page, pageSize },
+      filters: filters as z.infer<z.ZodObject<T>>
+    };
+  });
 }

@@ -26,18 +26,6 @@ export class UserFetchByEmailFailedError extends UserError {
 }
 
 /**
- * Error thrown when fetching a user by ID fails.
- * - Extends `UserError`.
- * - Status code: 500 (Internal Server Error).
- */
-export class UserFetchByIdFailedError extends UserError {
-  constructor(id: string, message: string = 'Failed to fetch user by id') {
-    super(message, 500); // 500 Internal Server Error
-    this.message = `Failed to fetch user by id ${id}`;
-  }
-}
-
-/**
  * Error thrown when fetching a user by criteria fails.
  * - Extends `UserError`.
  * - Status code: 500 (Internal Server Error).
@@ -46,6 +34,13 @@ export class UserFetchFailedError extends UserError {
   constructor(criteria: string, message: string = 'Failed to fetch user') {
     super(message, 500); // 500 Internal Server Error
     this.message = `Failed to fetch user ${criteria}`;
+  }
+}
+
+export class UserFetchByRoleFailedError extends UserError {
+  constructor(role: string, message: string = 'Failed to fetch users by role') {
+    super(message, 500); // 500 Internal Server Error
+    this.message = `Failed to fetch users by role ${role}`;
   }
 }
 
@@ -74,30 +69,6 @@ export class UserCreationFailedError extends UserError {
 }
 
 /**
- * Error thrown when user registration fails.
- * - Extends `UserError`.
- * - Status code: 500 (Internal Server Error).
- */
-export class UserRegisterFailedError extends UserError {
-  constructor(email: string, message: string = 'Failed to register user') {
-    super(message, 500); // 500 Internal Server Error
-    this.message = `Failed to register user ${email}`;
-  }
-}
-
-/**
- * Error thrown when a user is not found by email.
- * - Extends `UserError`.
- * - Status code: 404 (Not Found).
- */
-export class UserNotFoundEmailError extends UserError {
-  constructor(email: string, message: string = 'User not found') {
-    super(message, 404); // 404 Not Found
-    this.message = `User not found ${email}`;
-  }
-}
-
-/**
  * Error thrown when a user is not found.
  * - Extends `UserError`.
  * - Status code: 404 (Not Found).
@@ -105,30 +76,6 @@ export class UserNotFoundEmailError extends UserError {
 export class UserNotFoundError extends UserError {
   constructor(message: string = 'User not found') {
     super(message, 404); // 404 Not Found
-  }
-}
-
-/**
- * Error thrown when fetching all users fails.
- * - Extends `UserError`.
- * - Status code: 500 (Internal Server Error).
- */
-export class UserFindAllFailedError extends UserError {
-  constructor(message: string = 'Failed to get users') {
-    super(message, 500); // 500 Internal Server Error
-    this.message = `Failed to get users`;
-  }
-}
-
-/**
- * Error thrown when counting users fails.
- * - Extends `UserError`.
- * - Status code: 500 (Internal Server Error).
- */
-export class UserCountFailedError extends UserError {
-  constructor(message: string = 'Failed to count user') {
-    super(message, 500); // 500 Internal Server Error
-    this.message = `Failed to count user`;
   }
 }
 

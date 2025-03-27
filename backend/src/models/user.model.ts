@@ -1,11 +1,11 @@
 import { User, Role } from '@prisma/client';
-import { BaseFilterOptions } from '../common/types';
+import { QueryOptions } from '../common/types';
 import { PublicSelect } from './utils.model';
 
 /**
  * Represents a user object without sensitive information (e.g., password).
  */
-export type UserPublic = Omit<User, 'passwordHash' | 'passwordSalt' | 'createdAt' | 'updatedAt'> 
+export type UserPublic = Omit<User, 'passwordHash' | 'passwordSalt' | 'createdAt' | 'updatedAt'>
 
 export type UserPublicDto = UserPublic & {
   fullName: string;
@@ -39,7 +39,7 @@ export interface UserJWTPayload {
 /**
  * Represents the filter options for user queries.
  */
-export interface UserFilterOptions extends BaseFilterOptions {
+export interface UserQueryOptions extends QueryOptions {
   /** Filter by user role. */
   role?: Role;
   /** Filter by active status. */
@@ -71,13 +71,6 @@ export interface UserOrderByInput {
   createdAt?: 'asc' | 'desc';
   updatedAt?: 'asc' | 'desc';
 }
-
-export const UserOrderByFields: Record<keyof UserOrderByInput, boolean> = {
-  email: true,
-  name: true,
-  createdAt: true,
-  updatedAt: true
-};
 
 /**
  * Represents test data for a user, including sensitive information.

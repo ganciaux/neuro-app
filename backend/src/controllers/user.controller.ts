@@ -2,22 +2,24 @@ import { Request, Response } from 'express';
 import { logger } from '../logger/logger';
 import {
   UserCreateSchema,
+  UserEmailSchema,
+  UserFindAllSchema,
   UserIdSchema,
+  UserPasswordSchema,
   UserSearchSchema,
   UserUpdateSchema,
 } from '../schemas/user.schema';
-import { UserCreateZodDTO, UserUpdateZodDTO } from '../dtos/user.dto';
+import { UserCreateZodDTO, UserFindAllZodDTO, UserUpdateZodDTO } from '../dtos/user.dto';
 
 import { asyncHandler } from '../middlewares/async.handler.middleware';
 import {
   UserCreationFailedError,
+  UserDeletionFailedError,
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
-import { UserFilterOptions, UserPublicSelect } from '../models/user.model';
+import { UserPublicSelect, UserQueryOptions } from '../models/user.model';
 import { Container } from '../container';
-import { PaginationOptions } from '../common/types';
-import { Role } from '@prisma/client';
 
 const userService = Container.getUserService();
 
@@ -32,14 +34,10 @@ export const findAll = asyncHandler(
       `user.controller: findAll: [req:${request.requestId}]: findAllHandler`,
     );
 
-    const { page, pageSize, orderBy } = UserSearchSchema.parse(request.query);
-    
-    const paginationOptions: PaginationOptions = {
-      page,
-      pageSize,
-    };
+    const { paginationOptions, orderBy }: UserFindAllZodDTO = UserFindAllSchema.parse(request.query);
+  
 
-    const users = await userService.findAll(paginationOptions, orderBy);
+    const users = await userService.findAll(orderBy, paginationOptions);
 
     response.json(users);
   },
@@ -55,14 +53,9 @@ export const findAllPublic = asyncHandler(
     logger.info(
       `user.controller: findAllPublic: [req:${request.requestId}]: findAllPublic`,
     );
-    const { page, pageSize, orderBy } = UserSearchSchema.parse(request.query);
-    
-    const paginationOptions: PaginationOptions = {
-      page,
-      pageSize,
-    };
+    const { paginationOptions, orderBy }: UserFindAllZodDTO = UserFindAllSchema.parse(request.query);
 
-    const users = await userService.findAll(paginationOptions, orderBy, UserPublicSelect);
+    const users = await userService.findAll(orderBy, paginationOptions, UserPublicSelect);
 
     response.json(users);
   },
@@ -122,7 +115,7 @@ export const findById = asyncHandler(
  * - Fetches the user's public profile.
  * - Returns the user's public profile.
  */
-export const findPublicById  = asyncHandler(
+export const findPublicById = asyncHandler(
   async (request: Request, response: Response) => {
     logger.info(
       `user.controller: findPublicById: [req:${request.requestId}]: findPublicById`,
@@ -150,8 +143,11 @@ export const findByRole = asyncHandler(
     logger.info(
       `user.controller: findByRole: [req:${request.requestId}]: findByRole`,
     );
-    throw new Error('Method not implemented.');
-    return;
+    const { paginationOptions, orderBy, role }: UserFindAllZodDTO = UserFindAllSchema.parse(request.query);
+
+    const users = await userService.search({ role }, orderBy, paginationOptions, UserPublicSelect);
+
+    response.json(users);
   },
 );
 
@@ -166,8 +162,12 @@ export const findByEmail = asyncHandler(
     logger.info(
       `user.controller: findUserByEmailHandler: [req:${request.requestId}]: findUserByEmailHandler`,
     );
-    throw new Error('Method not implemented.');
-    return;
+    const { email } = UserEmailSchema.parse(request.params);
+    const user = await userService.findByEmail(email);
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+    response.json(user);
   },
 );
 
@@ -182,7 +182,9 @@ export const existsByEmail = asyncHandler(
     logger.info(
       `user.controller: existsByEmail: [req:${request.requestId}]: existsByEmail`,
     );
-    return;
+    const { email } = UserEmailSchema.parse(request.params);
+    const exists = await userService.existsByEmail(email);
+    response.json({ exists });
   },
 );
 
@@ -198,18 +200,16 @@ export const search = asyncHandler(
       `user.controller: search: [req:${request.requestId}]: search`,
     );
 
-    const paginationOptions = {
-      page: parseInt(request.query.page as string, 10) || 1,
-      pageSize: parseInt(request.query.pageSize as string, 10) || 10,
+    const { paginationOptions, orderBy, searchTerm, email, role, name } = UserSearchSchema.parse(request.query);
+
+    const queryOptions: UserQueryOptions = {
+      searchTerm,
+      email,
+      role,
+      name,
     };
 
-    const filterOptions: UserFilterOptions = {
-      name: request.query.name as string,
-      email: request.query.email as string,
-      role: request.query.role as Role,
-    };
-
-    const users = await userService.findAll(paginationOptions);
+    const users = await userService.search(queryOptions, orderBy, paginationOptions);
 
     response.json(users);
   },
@@ -282,8 +282,13 @@ export const updatePassword = asyncHandler(
     logger.info(
       `user.controller: updatePassword: [req:${request.requestId}]: updatePassword`,
     );
-    throw new Error('Method not implemented.');
-    return;
+    const { userId } = UserIdSchema.parse(request.params);
+    const { currentPassword, newPassword } = UserPasswordSchema.parse(request.body);
+    const user = await userService.updatePassword(userId, currentPassword, newPassword);
+    if (!user) {
+      throw new UserUpdateFailedError(userId);
+    }
+    response.json(user);
   },
 );
 
@@ -298,8 +303,12 @@ export const deactivate = asyncHandler(
     logger.info(
       `user.controller: deactivate: [req:${request.requestId}]: deactivate`,
     );
-    throw new Error('Method not implemented.');
-    return;
+    const { userId } = UserIdSchema.parse(request.params);
+    const user = await userService.deactivate(userId);
+    if (!user) {
+      throw new UserUpdateFailedError(userId);
+    }
+    response.json(user);
   },
 );
 
@@ -314,8 +323,12 @@ export const reactivate = asyncHandler(
     logger.info(
       `user.controller: reactivate: [req:${request.requestId}]: reactivate`,
     );
-    throw new Error('Method not implemented.');
-    return;
+    const { userId } = UserIdSchema.parse(request.params);
+    const user = await userService.reactivate(userId);
+    if (!user) {
+      throw new UserUpdateFailedError(userId);
+    }
+    response.json(user);
   },
 );
 
@@ -334,6 +347,10 @@ export const remove = asyncHandler(
     const { userId } = UserIdSchema.parse(request.body);
 
     const user = await userService.delete(userId);
+
+    if (!user) {
+      throw new UserDeletionFailedError(userId);
+    }
 
     response.status(204).send();
   },

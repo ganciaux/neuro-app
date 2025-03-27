@@ -3,11 +3,9 @@ import jwt from 'jsonwebtoken';
 import { UserJWTPayload } from '../models/user.model';
 import { APP_ENV } from '../config/environment';
 import {
-  JWTExpiredError,
-  JWTInvalidError,
-  JWTNotProvidedError,
-  RoleAccessRequiredError,
+  AuthRoleAccessRequiredError,
 } from '../errors/auth.errors';
+import { JWTExpiredError, JWTInvalidError, JWTNotProvidedError } from '../errors/jwt.error';
 import { asyncHandler } from './async.handler.middleware';
 import { UserJWTPayloadSchema } from '../schemas/user.schema';
 import { Container } from '../container';
@@ -55,7 +53,7 @@ export const authGuard = asyncHandler(
 export const adminGuard = asyncHandler(
   (request: Request, response: Response, next: NextFunction) => {
     if (request.user?.role !== Role.ADMIN) {
-      throw new RoleAccessRequiredError();
+      throw new AuthRoleAccessRequiredError();
     }
     next();
   },

@@ -1,36 +1,30 @@
 import { z } from 'zod';
-import { UserOrderByFields, UserOrderByInput } from '../models/user.model';
+import { UserOrderByInput } from '../models/user.model';
 import { UserValidator } from '../validators/user.validator';
-import { createSearchSchema, PaginationSchema } from './utils.schema';
 import { Role } from '@prisma/client';
+import { PaginationSchema, createPaginatedSchema } from './utils.schema';
 
-/**
- * Schema for validating user roles.
- * - Uses the `UserRole` enum.
- */
-export const UserRoleSchema = z.nativeEnum(Role);
+const emailValidation = z.string().refine(
+  value => UserValidator.validateEmail(value), 
+  { message: 'The email must be a valid email address.' }
+);
 
-/**
- * Schema for validating JWT payloads.
- * - Validates the subject (user ID), email, role, and timestamps.
- */
-export const UserJWTPayloadSchema = z.object({
-  /** Subject (user ID). */
-  sub: z.string().refine((value) => UserValidator.validateUserId(value), {
-    message: 'Invalid user ID format.',
-  }),
-  /** User email. */
-  email: z.string().email('Invalid email format.'),
-  /** User role. */
-  role: z.nativeEnum(Role, {
-    errorMap: (issue, ctx) => {
-      return { message: "The role must be either 'USER' or 'ADMIN'." };
-    },
-  }),
-  /** Issued at timestamp. */
-  iat: z.number().int('Invalid issued at timestamp.'),
-  /** Expiration timestamp. */
-  exp: z.number().int('Invalid expiration timestamp.'),
+const userIdValidation = z.string().refine(
+  value => UserValidator.validateUserId(value),
+  { message: 'The user ID must be a valid UUID.' }
+);
+
+const UserRoleValidation = z.nativeEnum(Role);
+
+const passwordValidation = z.string().refine(
+  value => UserValidator.validatePasswordStrength(value),
+  { message: 'The password must be at least 6 characters long.' }
+);
+
+const orderByValidation = z.string()
+.transform(val => {
+  const [field, direction] = val.split(':');
+  return { [field]: direction } as UserOrderByInput;
 });
 
 /**
@@ -38,11 +32,43 @@ export const UserJWTPayloadSchema = z.object({
  * - Ensures the user ID is a valid UUID.
  */
 export const UserIdSchema = z.object({
-  /** User ID. */
-  userId: z.string().refine((value) => UserValidator.validateUserId(value), {
-    message: 'The user ID must be a valid UUID.',
-  }),
+  userId: userIdValidation
 });
+
+/**
+ * Schema for validating user emails.
+ * - Ensures the email is a valid email address.
+ */
+export const UserEmailSchema = z.object({
+  email: emailValidation
+});
+
+export const UserPasswordSchema = z.object({
+  newPassword: passwordValidation,
+  currentPassword: passwordValidation
+}); 
+
+export const UserOrderBySchema = z.object({
+  orderBy: orderByValidation
+});
+
+/**
+ * Schema for validating JWT payloads.
+ * - Validates the subject (user ID), email, role, and timestamps.
+ */
+export const UserJWTPayloadSchema = z.object({
+  /** Subject (user ID). */
+  sub: userIdValidation,
+  /** User email. */
+  email: emailValidation,
+  /** User role. */
+  role: UserRoleValidation,
+  /** Issued at timestamp. */
+  iat: z.number().int('Invalid issued at timestamp.'),
+  /** Expiration timestamp. */
+  exp: z.number().int('Invalid expiration timestamp.'),
+});
+
 
 /**
  * Schema for validating user updates.
@@ -50,20 +76,13 @@ export const UserIdSchema = z.object({
  */
 export const UserUpdateSchema = z.object({
   /** User email. */
-  email: z.string().email('Invalid email format.'),
+  email: emailValidation,
   /** User password. */
-  password: z
-    .string()
-    .min(6, 'The password must be at least 6 characters long.')
-    .optional(),
+  password: passwordValidation,
   /** User name (optional). */
   name: z.string().optional(),
   /** User role. */
-  role: z.nativeEnum(Role, {
-    errorMap: (issue, ctx) => {
-      return { message: "The role must be either 'USER' or 'ADMIN'." };
-    },
-  }),
+  role: UserRoleValidation
 });
 
 /**
@@ -72,41 +91,38 @@ export const UserUpdateSchema = z.object({
  */
 export const UserCreateSchema = z.object({
   /** User email. */
-  email: z.string().email('Invalid email format.'),
+  email: emailValidation,
   /** User password. */
-  password: z
-    .string()
-    .min(6, 'The password must be at least 6 characters long.'),
+  password: passwordValidation,
   /** User role. */
-  role: z.nativeEnum(Role, {
-    errorMap: (issue, ctx) => {
-      return { message: "The role must be either 'USER' or 'ADMIN'." };
-    },
-  }),
+  role: UserRoleValidation,
   /** User name (optional). */
   name: z.string().optional(),
 });
 
-type OrderByValue = { [K in keyof UserOrderByInput]?: 'asc' | 'desc' };
-
-export const UserSearchSchema = createSearchSchema({
-  searchTerm: z.string().optional(), // Champ générique pour recherche globale
-  email: z.string().email().optional(),
-  role: z.nativeEnum(Role).optional(),
+export const UserSearchSchema = z.object({
+  searchTerm: z.string().optional(),
+  email: emailValidation.optional(),
+  role: UserRoleValidation.optional(),
   name: z.string().optional(),
-  orderBy: z.string()
-    .transform(val => {
-      const [field, direction] = val.split(':');
-      return { [field]: direction } as OrderByValue;
-    })
-    .optional()
-  /*
-  orderBy: z.custom<keyof UserOrderByInput>(val => {
-    const [field, direction] = String(val).split(':');
-    return Object.keys(UserOrderByFields).includes(field) && ['asc', 'desc'].includes(direction);
-  }).optional()*/
+  orderBy: orderByValidation.optional(),
+  paginationOptions: PaginationSchema
 });
 
-export const UserFindAllSchema = PaginationSchema.extend({
-  orderBy: z.enum(["createdAt:asc", "createdAt:desc", "name:asc", "name:desc"]).optional(),
-});
+export const UserFindAllSchema = createPaginatedSchema({
+  orderBy: orderByValidation.optional(),
+  role: UserRoleValidation.optional()
+}).transform((data): {
+  paginationOptions: { page: number; pageSize: number };
+  orderBy?: UserOrderByInput;
+  role?: 'USER' | 'ADMIN';
+} => ({
+  paginationOptions: {
+    page: data.paginationOptions.page,
+    pageSize: data.paginationOptions.pageSize
+  },
+  orderBy: data.filters.orderBy,
+  role: data.filters.role
+}));
+
+

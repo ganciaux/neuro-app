@@ -5,6 +5,7 @@ import { logger } from '../logger/logger';
 import { prisma } from '../config/database';
 import { Container } from '../container';
 import { Role } from '@prisma/client';
+import { UserCreationFailedError } from '../errors/user.errors';
 
 const userService = Container.getUserService();
 const authService = Container.getAuthService();
@@ -37,7 +38,7 @@ export async function createTestUser(
   const user = await userService.create(email, password, name, role, false);
 
   if (!user) {
-    throw new Error('User not created');
+    throw new UserCreationFailedError(email);
   }
 
   if (token) {

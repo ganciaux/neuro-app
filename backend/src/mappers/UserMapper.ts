@@ -8,4 +8,10 @@ export class UserMapper {
       fullName: `${user.name}`
     };
   }
+
+  static toPublicList(users: User[]): UserPublicDto[] {
+    return users.map(UserMapper.toPublic);
+  }
+
 }
+

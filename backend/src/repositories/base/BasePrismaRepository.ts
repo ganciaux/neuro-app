@@ -2,9 +2,9 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { IBaseRepository } from './IBaseRepository';
 import { PrismaError } from '../../errors/prisma.errors';
 import {
-  BaseFilterOptions,
   PaginatedResult,
   PaginationOptions,
+  QueryOptions,
 } from '../../common/types';
 
 /**
@@ -16,7 +16,7 @@ export abstract class BasePrismaRepository<
   UpdateInput,
   WhereInput,
   OrderByInput,
-  FilterOptions extends BaseFilterOptions,
+  FilterOptions extends QueryOptions,
 > implements
   IBaseRepository<
     T,
@@ -130,32 +130,75 @@ export abstract class BasePrismaRepository<
   /**
    * Finds all items with pagination and filters.
    */
-  async findAll(
-    paginationOptions?: Partial<PaginationOptions>,
-    orderBy?: OrderByInput,
+  async findPaginated(
+    where?: WhereInput,
+    pagination?: Partial<PaginationOptions>,
     select?: any,
+    orderBy?: OrderByInput
   ): Promise<PaginatedResult<T>> {
+    const { page, pageSize } = this.normalizePagination(pagination);
+    const orderByOptions = this.buildOrderBy(orderBy);
+
+    const [items, total] = await Promise.all([
+      this.prismaModel.findMany({
+        where,
+        select,
+        orderBy: orderByOptions,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prismaModel.count({ where }),
+    ]);
+
+    return {
+      data: items,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  /**
+   * Finds all items with pagination and filters.
+   */
+  async find(
+    where?: WhereInput,
+    pagination?: Partial<PaginationOptions>,
+    select?: any,
+    orderBy?: OrderByInput
+  ): Promise<PaginatedResult<T> | T[]> {
     try {
-      const { page, pageSize } = this.normalizePagination(paginationOptions);
-      const orderByOptions = this.buildOrderBy(orderBy);
 
-      const [items, total] = await Promise.all([
-        this.prismaModel.findMany({
-          select,
-          orderByOptions,
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-        }),
-        this.prismaModel.count(),
-      ]);
+      if (pagination) {
+        const { page, pageSize } = this.normalizePagination(pagination);
+        const orderByOptions = this.buildOrderBy(orderBy);
 
-      return {
-        data: items,
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      };
+        const [items, total] = await Promise.all([
+          this.prismaModel.findMany({
+            where,
+            select,
+            orderBy: orderByOptions,
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+          }),
+          this.prismaModel.count({ where }),
+        ]);
+
+        return {
+          data: items,
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        };
+      }
+
+      return this.prismaModel.findMany({
+        where,
+        select,
+        orderBy: this.buildOrderBy(orderBy),
+      });
     } catch (error) {
       this.handlePrismaError(
         error,
@@ -200,7 +243,7 @@ export abstract class BasePrismaRepository<
       );
     }
   }
-  
+
   /**
    * Updates an item.
    */

@@ -43,12 +43,12 @@ export const APP_ENV: AppEnv = {
 if (APP_ENV.NODE_ENV === 'production') {
   if (!process.env.JWT_SECRET) {
     throw new Error(
-      "JWT_SECRET est manquant dans les variables d'environnement",
+      "JWT_SECRET is missing in the environment variables",
     );
   }
   if (!process.env.DATABASE_URL) {
     throw new Error(
-      "DATABASE_URL est manquant dans les variables d'environnement",
+      "JWT_SECRET is missing in the environment variables",
     );
   }
 }

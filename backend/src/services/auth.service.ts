@@ -2,13 +2,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { APP_ENV } from '../config/environment';
 import { logger } from '../logger/logger';
-import { InvalidCredentialsError } from '../errors/auth.errors';
+import { AuthCredentialsError } from '../errors/auth.errors';
 import { UserCreationFailedError } from '../errors/user.errors';
-import { UserRole } from '../models/user.model';
 import { UserService } from './user.service';
-
+import { Role } from '@prisma/client';
 export class AuthService {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
 
   async registerUser(
     email: string,
@@ -18,7 +17,7 @@ export class AuthService {
       email,
       password,
       '',
-      UserRole.USER,
+      Role.USER,
       true,
     );
     logger.info(`auth.service: registerUser:`);
@@ -37,12 +36,12 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
 
     if (!user) {
-      throw new InvalidCredentialsError(email);
+      throw new AuthCredentialsError(email);
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      throw new InvalidCredentialsError(email);
+      throw new AuthCredentialsError(email);
     }
 
     const payload = {

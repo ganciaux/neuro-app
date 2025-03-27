@@ -2,9 +2,9 @@ import { Prisma, Role, User } from "@prisma/client";
 import { prisma } from '../../config/database';
 import { IUserRepository } from "./IUserRepository";
 import { BasePrismaRepository } from "../base/BasePrismaRepository";
-import { UserFilterOptions, UserOrderByInput } from "../../models/user.model";
+import { UserQueryOptions, UserOrderByInput } from "../../models/user.model";
 import { PaginationOptions, PaginatedResult } from "../../common/types";
-import { UserFetchByEmailFailedError, UserFetchFailedError } from "../../errors/user.errors";
+import { UserFetchByEmailFailedError, UserFetchFailedError, UserFetchByRoleFailedError } from "../../errors/user.errors";
 
 export class PrismaUserRepository extends BasePrismaRepository<
     User,
@@ -12,7 +12,7 @@ export class PrismaUserRepository extends BasePrismaRepository<
     Prisma.UserUpdateInput,
     Prisma.UserWhereInput,
     Prisma.UserOrderByWithRelationInput,
-    UserFilterOptions
+    UserQueryOptions
 > implements IUserRepository {
     async existsById(userId: string): Promise<boolean> {
         return !!this.findById(userId);
@@ -54,11 +54,20 @@ export class PrismaUserRepository extends BasePrismaRepository<
         }
     }
 
-    async findByRole(role: Role, pagination?: Partial<PaginationOptions>, select?: any): Promise<PaginatedResult<User>> {
-        throw new Error('Method not implemented.');
+    async findAll(
+        orderBy?: UserOrderByInput,
+        paginationOptions?: Partial<PaginationOptions>,
+        select?: any
+    ): Promise<PaginatedResult<User> | User[]> {
+        return await this.find(undefined, paginationOptions, select, orderBy);
     }
 
-    async search(searchTerm: string, options?: UserFilterOptions, orderBy?: UserOrderByInput, pagination?: Partial<PaginationOptions>): Promise<User[]> {
-        throw new Error('Method not implemented.');
+    async findByRole(role: Role, pagination?: Partial<PaginationOptions>, select?: any): Promise<PaginatedResult<User> | User[]> {
+        return await this.find({ role }, pagination, select);
+    }
+
+    async search(queryOptions?: UserQueryOptions, orderBy?: UserOrderByInput, pagination?:
+        Partial<PaginationOptions>,select?: any): Promise<PaginatedResult<User> | User[]> {
+        return await this.find(queryOptions, pagination, select, orderBy);
     }
 }

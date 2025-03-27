@@ -1,7 +1,7 @@
 import {
   PaginatedResult,
   PaginationOptions,
-  BaseFilterOptions,
+  QueryOptions,
 } from '../../common/types';
 
 /**BaseFilterOptions,
@@ -13,13 +13,14 @@ export interface IBaseRepository<
   UpdateInput,
   WhereInput,
   OrderByInput,
-  FilterOptions extends BaseFilterOptions,
+  FilterOptions extends QueryOptions,
 > {
-  findAll(
-    paginationOptions?: Partial<PaginationOptions>,
-    orderBy?: OrderByInput,
+  find(
+    where?: WhereInput,
+    pagination?: Partial<PaginationOptions>,
     select?: any,
-  ): Promise<PaginatedResult<T>>;
+    orderBy?: OrderByInput
+  ): Promise<PaginatedResult<T> | T[]>
   findById(id: string, select?: any): Promise<T | null>;
   create(data: CreateInput): Promise<T>;
   update(id: string, data: UpdateInput): Promise<T>;
