@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { UserPrisma, UserRole, UserJWTPayload } from '../models/user.model';
+import { UserJWTPayload } from '../models/user.model';
 import { APP_ENV } from '../config/environment';
 import {
   JWTExpiredError,
@@ -11,13 +11,13 @@ import {
 import { asyncHandler } from './async.handler.middleware';
 import { UserJWTPayloadSchema } from '../schemas/user.schema';
 import { Container } from '../container';
-
+import { Role, User } from '@prisma/client';
 const userService = Container.getUserService();
 
 declare global {
   namespace Express {
     interface Request {
-      user?: UserPrisma;
+      user?: User;
     }
   }
 }
@@ -54,7 +54,7 @@ export const authGuard = asyncHandler(
 
 export const adminGuard = asyncHandler(
   (request: Request, response: Response, next: NextFunction) => {
-    if (request.user?.role !== UserRole.ADMIN) {
+    if (request.user?.role !== Role.ADMIN) {
       throw new RoleAccessRequiredError();
     }
     next();

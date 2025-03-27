@@ -1,12 +1,13 @@
 import request from 'supertest';
 import { app, server } from '../index';
-import { UserTestData, UserRole } from '../models/user.model';
+import { UserTestData } from '../models/user.model';
 import { logger } from '../logger/logger';
-import { generateToken } from '../services/auth.service';
 import { prisma } from '../config/database';
 import { Container } from '../container';
+import { Role } from '@prisma/client';
 
 const userService = Container.getUserService();
+const authService = Container.getAuthService();
 
 beforeAll(async () => {
   logger.info('setup: JEST: 🛠️ Setting up before all tests');
@@ -29,7 +30,7 @@ export async function createTestUser(
   email: string,
   password: string,
   name: string = 'name',
-  role: UserRole = UserRole.USER,
+  role: Role = Role.USER,
   token: boolean = true,
 ): Promise<UserTestData> {
   let authToken: string = '';
@@ -40,7 +41,7 @@ export async function createTestUser(
   }
 
   if (token) {
-    authToken = await generateToken(email, password);
+    authToken = await authService.generateToken(email, password);
   }
 
   return { user, email, password, token: authToken };
@@ -58,13 +59,13 @@ export async function setupDatabase() {
     'user@user.com',
     'passwordUser1.',
     'user',
-    UserRole.USER,
+    Role.USER,
   );
 
   globalThis.admin = await createTestUser(
     'admin@admin.com',
     'passwordAdmin1.',
     'admin',
-    UserRole.ADMIN,
+    Role.ADMIN,
   );
 }

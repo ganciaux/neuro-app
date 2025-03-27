@@ -1,61 +1,24 @@
-import { Prisma } from '@prisma/client';
+import { User, Role } from '@prisma/client';
 import { BaseFilterOptions } from '../common/types';
-
-/**
- * Enum representing user roles.
- */
-export enum UserRole {
-  USER = 'USER',
-  ADMIN = 'ADMIN',
-}
-
-/**
- * Represents a user object.
- */
-export type User = {
-  name: string;
-  id: string;
-  email: string;
-  passwordHash: string;
-  passwordSalt: string;
-  role: UserRole;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { PublicSelect } from './utils.model';
 
 /**
  * Represents a user object without sensitive information (e.g., password).
  */
-export type UserPublic = Omit<User, 'passwordHash' | 'passwordSalt'>;
+export type UserPublic = Omit<User, 'passwordHash' | 'passwordSalt' | 'createdAt' | 'updatedAt'> 
 
-/**
- * Represents the keys of the `UserPublic` type.
- */
-type UserPublicKeys = keyof UserPublic;
+export type UserPublicDto = UserPublic & {
+  fullName: string;
+  profileUrl?: string;
+};
 
-/**
- * Object used to select public user fields in Prisma queries.
- */
-export const userPublicSelect: Record<UserPublicKeys, boolean> = {
+export const UserPublicSelect: PublicSelect<UserPublic> = {
   id: true,
   email: true,
   role: true,
   name: true,
-  isActive: true,
-  createdAt: false,
-  updatedAt: false,
+  isActive: true
 };
-
-/**
- * Represents a user object with an authentication token.
- */
-export interface UserWithAuthToken {
-  /** Public user information. */
-  user: UserPublic;
-  /** Authentication token. */
-  token: string;
-}
 
 /**
  * Represents the payload of a JWT token for a user.
@@ -66,7 +29,7 @@ export interface UserJWTPayload {
   /** User email. */
   email: string;
   /** User role. */
-  role: UserRole;
+  role: Role;
   /** Issued at timestamp. */
   iat: number;
   /** Expiration timestamp. */
@@ -78,7 +41,7 @@ export interface UserJWTPayload {
  */
 export interface UserFilterOptions extends BaseFilterOptions {
   /** Filter by user role. */
-  role?: UserRole;
+  role?: Role;
   /** Filter by active status. */
   isActive?: boolean;
   /** Filter by email. */
@@ -93,7 +56,7 @@ export interface UserFilterOptions extends BaseFilterOptions {
 export interface UserWhereInput {
   id?: string;
   email?: string;
-  role?: UserRole;
+  role?: Role;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -104,21 +67,24 @@ export interface UserWhereInput {
  */
 export interface UserOrderByInput {
   email?: 'asc' | 'desc';
+  name?: 'asc' | 'desc';
   createdAt?: 'asc' | 'desc';
   updatedAt?: 'asc' | 'desc';
 }
 
-/**
- * Represents the full user model from Prisma.
- */
-export type UserPrisma = Prisma.UserGetPayload<{}>;
+export const UserOrderByFields: Record<keyof UserOrderByInput, boolean> = {
+  email: true,
+  name: true,
+  createdAt: true,
+  updatedAt: true
+};
 
 /**
  * Represents test data for a user, including sensitive information.
  */
 export interface UserTestData {
   /** Full user information from Prisma. */
-  user: UserPrisma;
+  user: User;
   /** User email. */
   email: string;
   /** User password. */

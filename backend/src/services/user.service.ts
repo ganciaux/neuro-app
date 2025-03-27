@@ -1,13 +1,16 @@
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { UserFilterOptions, UserPublic, UserRole } from '../models/user.model';
+import { UserOrderByInput, UserPublic } from '../models/user.model';
 import { UserValidator } from '../validators/user.validator';
 import { UserUpdateDTO } from '../dtos/user.dto';
 import { PaginatedResult, PaginationOptions } from '../common/types';
 import { IUserRepository } from '../repositories/user/IUserRepository';
 import { UserEmailAlreadyExistsError, UserInvalidDataError, UserNotFoundError, UserPasswordIncorrectError } from '../errors/user.errors';
+import { UserMapper } from '../mappers/UserMapper';
 
 export class UserService {
+  private toPublic = UserMapper.toPublic
+  
   constructor(private userRepository: IUserRepository) {}
 
   /**
@@ -38,7 +41,7 @@ export class UserService {
     email: string,
     password: string,
     name: string = '',
-    role: UserRole,
+    role: Role,
     isActive: boolean,
   ): Promise<User> {
     this.validateNewUserData(email, password);
@@ -110,8 +113,7 @@ export class UserService {
    * Converts a user to a public version
    */
   toUserPublic(user: User): UserPublic {
-    const { passwordHash, passwordSalt, ...userPublic } = user;
-    return userPublic as UserPublic;
+    return this.toPublic(user);
   }
 
   /**
@@ -165,11 +167,13 @@ export class UserService {
    */
   async findAll(
     paginationOptions?: Partial<PaginationOptions>,
-    filterOptions?: UserFilterOptions,
+    orderBy?: UserOrderByInput,
+    select?: any,
   ): Promise<PaginatedResult<User>> {
     return this.userRepository.findAll(
       paginationOptions,
-      filterOptions,
+      orderBy,
+      select,
     );
   }
 }

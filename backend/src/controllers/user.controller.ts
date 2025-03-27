@@ -14,9 +14,10 @@ import {
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
-import { UserFilterOptions, UserRole } from '../models/user.model';
+import { UserFilterOptions, UserPublicSelect } from '../models/user.model';
 import { Container } from '../container';
 import { PaginationOptions } from '../common/types';
+import { Role } from '@prisma/client';
 
 const userService = Container.getUserService();
 
@@ -31,20 +32,14 @@ export const findAll = asyncHandler(
       `user.controller: findAll: [req:${request.requestId}]: findAllHandler`,
     );
 
-    const { page, pageSize, name, email, role } = UserSearchSchema.parse(request.query);
+    const { page, pageSize, orderBy } = UserSearchSchema.parse(request.query);
     
     const paginationOptions: PaginationOptions = {
       page,
       pageSize,
     };
 
-    const filterOptions: UserFilterOptions = {
-      name,
-      email,
-      role,
-    };
-
-    const users = await userService.findAll(paginationOptions, filterOptions);
+    const users = await userService.findAll(paginationOptions, orderBy);
 
     response.json(users);
   },
@@ -60,8 +55,16 @@ export const findAllPublic = asyncHandler(
     logger.info(
       `user.controller: findAllPublic: [req:${request.requestId}]: findAllPublic`,
     );
-    throw new Error('Method not implemented.');
-    return;
+    const { page, pageSize, orderBy } = UserSearchSchema.parse(request.query);
+    
+    const paginationOptions: PaginationOptions = {
+      page,
+      pageSize,
+    };
+
+    const users = await userService.findAll(paginationOptions, orderBy, UserPublicSelect);
+
+    response.json(users);
   },
 );
 
@@ -125,7 +128,6 @@ export const findPublicById  = asyncHandler(
       `user.controller: findPublicById: [req:${request.requestId}]: findPublicById`,
     );
     const { userId } = UserIdSchema.parse(request.params);
-    //const userId = request.params.id;
 
     const user = await userService.findByIdToPublic(userId);
 
@@ -204,10 +206,10 @@ export const search = asyncHandler(
     const filterOptions: UserFilterOptions = {
       name: request.query.name as string,
       email: request.query.email as string,
-      role: request.query.role as UserRole,
+      role: request.query.role as Role,
     };
 
-    const users = await userService.findAll(paginationOptions, filterOptions);
+    const users = await userService.findAll(paginationOptions);
 
     response.json(users);
   },

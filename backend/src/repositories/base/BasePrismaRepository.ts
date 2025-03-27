@@ -132,23 +132,21 @@ export abstract class BasePrismaRepository<
    */
   async findAll(
     paginationOptions?: Partial<PaginationOptions>,
-    filterOptions?: any,
+    orderBy?: OrderByInput,
     select?: any,
   ): Promise<PaginatedResult<T>> {
     try {
       const { page, pageSize } = this.normalizePagination(paginationOptions);
-      const where = this.buildFilter(filterOptions);
-      const orderBy = this.buildOrderBy(filterOptions);
+      const orderByOptions = this.buildOrderBy(orderBy);
 
       const [items, total] = await Promise.all([
         this.prismaModel.findMany({
           select,
-          where,
-          orderBy,
+          orderByOptions,
           skip: (page - 1) * pageSize,
           take: pageSize,
         }),
-        this.prismaModel.count({ where }),
+        this.prismaModel.count(),
       ]);
 
       return {

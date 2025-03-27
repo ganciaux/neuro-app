@@ -2,8 +2,7 @@ import request from 'supertest';
 import { app } from '../index';
 import { logger } from '../logger/logger';
 import { createTestUser } from './setup';
-import { UserRole, UserTestData } from '../models/user.model';
-import { deleteUser } from '../services/user.service';
+import { UserTestData } from '../models/user.model';
 
 const API_BASE_PATH = '/api/v1/users';
 

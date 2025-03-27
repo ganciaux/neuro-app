@@ -1,14 +1,11 @@
-import { Prisma, User } from "@prisma/client";
+import { Prisma, Role, User } from "@prisma/client";
 import { prisma } from '../../config/database';
 import { IUserRepository } from "./IUserRepository";
 import { BasePrismaRepository } from "../base/BasePrismaRepository";
-import { UserFilterOptions, UserRole } from "../../models/user.model";
+import { UserFilterOptions, UserOrderByInput } from "../../models/user.model";
 import { PaginationOptions, PaginatedResult } from "../../common/types";
 import { UserFetchByEmailFailedError, UserFetchFailedError } from "../../errors/user.errors";
-import { UserValidator } from '../../validators/user.validator';
-/**
- * Implémentation du repository d'utilisateurs avec Prisma
- */
+
 export class PrismaUserRepository extends BasePrismaRepository<
     User,
     Prisma.UserCreateInput,
@@ -25,13 +22,6 @@ export class PrismaUserRepository extends BasePrismaRepository<
     }
 
     async findByCriteria(criteria: { email?: string; id?: string; }): Promise<User | null> {
-        if (
-            (criteria.id && !UserValidator.validateUserId(criteria.id)) ||
-            (criteria.email && !UserValidator.validateEmail(criteria.email))
-        ) {
-            return null;
-        }
-
         if (!criteria.id && !criteria.email) {
             return null;
         }
@@ -52,10 +42,6 @@ export class PrismaUserRepository extends BasePrismaRepository<
     }
 
     async findByEmail(email: string): Promise<User | null> {
-        if (!UserValidator.validateEmail(email)) {
-            return null;
-        }
-
         try {
             return await prisma.user.findUnique({ where: { email } });
         } catch (error) {
@@ -68,11 +54,11 @@ export class PrismaUserRepository extends BasePrismaRepository<
         }
     }
 
-    async findByRole(role: UserRole, pagination?: Partial<PaginationOptions>): Promise<PaginatedResult<User>> {
+    async findByRole(role: Role, pagination?: Partial<PaginationOptions>, select?: any): Promise<PaginatedResult<User>> {
         throw new Error('Method not implemented.');
     }
 
-    async searchUsers(searchTerm: string, options?: UserFilterOptions, pagination?: Partial<PaginationOptions>): Promise<User[]> {
+    async search(searchTerm: string, options?: UserFilterOptions, orderBy?: UserOrderByInput, pagination?: Partial<PaginationOptions>): Promise<User[]> {
         throw new Error('Method not implemented.');
     }
 }

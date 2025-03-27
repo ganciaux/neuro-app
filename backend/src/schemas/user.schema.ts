@@ -1,12 +1,14 @@
 import { z } from 'zod';
-import { UserRole } from '../models/user.model';
+import { UserOrderByFields, UserOrderByInput } from '../models/user.model';
 import { UserValidator } from '../validators/user.validator';
+import { createSearchSchema, PaginationSchema } from './utils.schema';
+import { Role } from '@prisma/client';
 
 /**
  * Schema for validating user roles.
  * - Uses the `UserRole` enum.
  */
-export const UserRoleSchema = z.nativeEnum(UserRole);
+export const UserRoleSchema = z.nativeEnum(Role);
 
 /**
  * Schema for validating JWT payloads.
@@ -20,7 +22,7 @@ export const UserJWTPayloadSchema = z.object({
   /** User email. */
   email: z.string().email('Invalid email format.'),
   /** User role. */
-  role: z.nativeEnum(UserRole, {
+  role: z.nativeEnum(Role, {
     errorMap: (issue, ctx) => {
       return { message: "The role must be either 'USER' or 'ADMIN'." };
     },
@@ -57,7 +59,7 @@ export const UserUpdateSchema = z.object({
   /** User name (optional). */
   name: z.string().optional(),
   /** User role. */
-  role: z.nativeEnum(UserRole, {
+  role: z.nativeEnum(Role, {
     errorMap: (issue, ctx) => {
       return { message: "The role must be either 'USER' or 'ADMIN'." };
     },
@@ -76,7 +78,7 @@ export const UserCreateSchema = z.object({
     .string()
     .min(6, 'The password must be at least 6 characters long.'),
   /** User role. */
-  role: z.nativeEnum(UserRole, {
+  role: z.nativeEnum(Role, {
     errorMap: (issue, ctx) => {
       return { message: "The role must be either 'USER' or 'ADMIN'." };
     },
@@ -85,31 +87,26 @@ export const UserCreateSchema = z.object({
   name: z.string().optional(),
 });
 
-/**
- * Schema for validating user search.
- * - Validates page, pageSize, email, role, and name (optional).
- */
-export const UserSearchSchema = z.object({
-  /** Page number. */
-  page: z
-    .string()
-    .regex(/^\d+$/, 'Page must be a number.')
-    .transform((val) => parseInt(val, 10))
-    .refine((val) => val > 0, 'Page must be greater than 0.'),
-  /** Page size. */
-  pageSize: z
-    .string()
-    .regex(/^\d+$/, 'Page size must be a number.')
-    .transform((val) => parseInt(val, 10))
-    .refine((val) => val > 0, 'Page size must be greater than 0.'),
-  /** User email (optional). */
-  email: z.string().email('Invalid email format.').optional(),
-  /** User role (optional). */
-  role: z
-    .nativeEnum(UserRole, {
-      errorMap: () => ({ message: "The role must be either 'USER' or 'ADMIN'." }),
-    })
-    .optional(),
-  /** User name (optional). */
+type OrderByValue = { [K in keyof UserOrderByInput]?: 'asc' | 'desc' };
+
+export const UserSearchSchema = createSearchSchema({
+  searchTerm: z.string().optional(), // Champ générique pour recherche globale
+  email: z.string().email().optional(),
+  role: z.nativeEnum(Role).optional(),
   name: z.string().optional(),
+  orderBy: z.string()
+    .transform(val => {
+      const [field, direction] = val.split(':');
+      return { [field]: direction } as OrderByValue;
+    })
+    .optional()
+  /*
+  orderBy: z.custom<keyof UserOrderByInput>(val => {
+    const [field, direction] = String(val).split(':');
+    return Object.keys(UserOrderByFields).includes(field) && ['asc', 'desc'].includes(direction);
+  }).optional()*/
+});
+
+export const UserFindAllSchema = PaginationSchema.extend({
+  orderBy: z.enum(["createdAt:asc", "createdAt:desc", "name:asc", "name:desc"]).optional(),
 });

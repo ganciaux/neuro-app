@@ -1,26 +1,11 @@
-import { UserPrisma, UserRole } from '../models/user.model';
-import { UserCreateDTO, UserUpdateDTO } from '../dtos/user.dto';
-
+import { UserPublicDto } from '../models/user.model';
+import { User } from '@prisma/client';
 export class UserMapper {
-  static toEntity(dto: UserCreateDTO | UserUpdateDTO): Partial<UserPrisma> {
+  static toPublic(user: User): UserPublicDto {
+    const { passwordHash, passwordSalt, ...data } = user;
     return {
-      email: dto.email,
-      name: dto.name,
-      role: dto.role,
-      passwordHash: dto.passwordHash,   //todo change
-    };
-  }
-
-  static toDTO(user: UserPrisma): UserCreateDTO {
-    return {
-      email: user.email,
-      name: user.name,
-      role: user.role as UserRole,
-      passwordHash: user.passwordHash, //todo change
-      passwordSalt: user.passwordSalt,
-      isActive: user.isActive,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      ...data,
+      fullName: `${user.name}`
     };
   }
 }

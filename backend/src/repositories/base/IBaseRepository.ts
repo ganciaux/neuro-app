@@ -17,7 +17,7 @@ export interface IBaseRepository<
 > {
   findAll(
     paginationOptions?: Partial<PaginationOptions>,
-    filterOptions?: FilterOptions,
+    orderBy?: OrderByInput,
     select?: any,
   ): Promise<PaginatedResult<T>>;
   findById(id: string, select?: any): Promise<T | null>;

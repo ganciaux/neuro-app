@@ -1,12 +1,12 @@
 
 import { IBaseRepository } from "../base/IBaseRepository";
-import { UserFilterOptions, UserOrderByInput, UserRole, UserWhereInput, userPublicSelect } from "../../models/user.model";
+import { UserFilterOptions, UserOrderByInput, UserWhereInput } from "../../models/user.model";
 import { UserCreateDTO, UserUpdateDTO,  } from "../../dtos/user.dto";
 import { PaginatedResult, PaginationOptions } from "../../common/types";
-import { User } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 
 /**
- * Interface pour le repository d'utilisateurs
+ * Repository interface for user operations.
  */
 export interface IUserRepository extends IBaseRepository<
     User,
@@ -22,12 +22,13 @@ export interface IUserRepository extends IBaseRepository<
     findByEmail(email: string): Promise<User | null>;
     findAll(
         paginationOptions?: Partial<PaginationOptions>,
-        filterOptions?: UserFilterOptions,
+        orderBy?: UserOrderByInput,
         select?: any
     ): Promise<PaginatedResult<User>>;
     findByRole(
-        role: UserRole,
+        role: Role,
         pagination?: Partial<PaginationOptions>,
+        select?: any
     ): Promise<PaginatedResult<User>>;
-    searchUsers(searchTerm: string, options?: UserFilterOptions, pagination?: Partial<PaginationOptions>): Promise<User[]>;
+    search(searchTerm: string, options?: UserFilterOptions, orderBy?: UserOrderByInput, pagination?: Partial<PaginationOptions>): Promise<User[]>;
 }

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { UserCreateSchema, UserUpdateSchema } from '../schemas/user.schema';
-import { UserRole } from '../models/user.model';
-
+import { Role } from '@prisma/client';
 /**
  * Represents the data transfer object (DTO) for creating a user.
  * - Derived from `UserCreateSchema`.
@@ -16,7 +15,7 @@ export type UserCreateDTO = {
     email: string;
     passwordHash: string;
     passwordSalt: string;
-    role?: UserRole;
+    role?: Role;
     isActive?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
@@ -28,7 +27,7 @@ export type UserUpdateDTO = {
     email?: string;
     passwordHash?: string;
     passwordSalt?: string;
-    role?: UserRole;
+    role?: Role;
     isActive?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
