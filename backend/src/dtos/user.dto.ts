@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserCreateSchema, UserFindAllSchema, UserOrderBySchema, UserPaginationSchema, UserSearchSchema, UserUpdateSchema } from '../schemas/user.schema';
+import { UserCreateSchema, UserFindAllSchema, UserOrderBySchema, UserSearchSchema, UserUpdateSchema } from '../schemas/user.schema';
 import { Role } from '@prisma/client';
 
 export type UserCreateZodDTO = z.infer<typeof UserCreateSchema>;
@@ -7,8 +7,6 @@ export type UserCreateZodDTO = z.infer<typeof UserCreateSchema>;
 export type UserUpdateZodDTO = z.infer<typeof UserUpdateSchema>;
 
 export type UserOrderByZodDTO = z.infer<typeof UserOrderBySchema>;
-
-export type UserPaginationZodDTO = z.infer<typeof UserPaginationSchema>;
 
 export type UserSearchZodDTO = z.infer<typeof UserSearchSchema>;
 

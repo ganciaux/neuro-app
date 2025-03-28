@@ -5,6 +5,7 @@ import {
   PaginatedResult,
   PaginationOptions,
   QueryOptions,
+  StringFields,
 } from '../../common/types';
 
 /**
@@ -80,28 +81,46 @@ export abstract class BasePrismaRepository<
   }
 
   /**
-   * Builds the search filter.
-   */
+ * Builds a search filter with optional custom fields
+ * @param searchTerm Term to search
+ * @param searchFields Specific fields to search on (overrides default searchFields)
+ */
   protected buildSearchFilter(
     searchTerm?: string,
-  ): Prisma.Enumerable<any> | undefined {
-    if (!searchTerm || this.searchFields.length === 0) return undefined;
+    searchFields?: StringFields<WhereInput>[]
+  ): Prisma.Enumerable<WhereInput>[] | undefined {
+    if (!searchTerm) return undefined;
 
-    return this.searchFields.map((field) => ({
-      [field]: { contains: searchTerm, mode: 'insensitive' },
-    }));
+    // Use custom fields if provided, otherwise fallback to repository defaults
+    const targetFields = searchFields?.length ? searchFields : this.searchFields;
+    if (!targetFields.length) return undefined;
+
+    return targetFields.map((field) => ({
+      [field]: {
+        contains: searchTerm,
+        mode: 'insensitive'
+      }
+    })) as Prisma.Enumerable<WhereInput>[];
   }
 
   /**
-   * Builds the filters for the search.
+   * Builds complete filters with dynamic search fields
+   * @param options Filter options
+   * @param customSearchFields Optional field override for search
    */
-  protected buildFilter(options?: any): WhereInput {
+  protected buildFilter(
+    options?: FilterOptions,
+    customSearchFields?: StringFields<WhereInput>[]
+  ): WhereInput {
     if (!options) return {} as WhereInput;
 
     const filter: any = {};
 
     if (options.searchTerm) {
-      const searchFilters = this.buildSearchFilter(options.searchTerm);
+      const searchFilters = this.buildSearchFilter(
+        options.searchTerm,
+        customSearchFields
+      );
       if (searchFilters) {
         filter.OR = searchFilters;
       }
@@ -130,45 +149,17 @@ export abstract class BasePrismaRepository<
   /**
    * Finds all items with pagination and filters.
    */
-  async findPaginated(
-    where?: WhereInput,
-    pagination?: Partial<PaginationOptions>,
-    select?: any,
-    orderBy?: OrderByInput
-  ): Promise<PaginatedResult<T>> {
-    const { page, pageSize } = this.normalizePagination(pagination);
-    const orderByOptions = this.buildOrderBy(orderBy);
-
-    const [items, total] = await Promise.all([
-      this.prismaModel.findMany({
-        where,
-        select,
-        orderBy: orderByOptions,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prismaModel.count({ where }),
-    ]);
-
-    return {
-      data: items,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    };
-  }
-
-  /**
-   * Finds all items with pagination and filters.
-   */
   async find(
     where?: WhereInput,
+    filters?: FilterOptions,
+    searchFields?: StringFields<WhereInput>[],
     pagination?: Partial<PaginationOptions>,
     select?: any,
     orderBy?: OrderByInput
   ): Promise<PaginatedResult<T> | T[]> {
     try {
+      const baseFilter = this.buildFilter(filters, searchFields);
+      const finalWhere = { ...where, ...baseFilter };
 
       if (pagination) {
         const { page, pageSize } = this.normalizePagination(pagination);
@@ -176,13 +167,13 @@ export abstract class BasePrismaRepository<
 
         const [items, total] = await Promise.all([
           this.prismaModel.findMany({
-            where,
+            finalWhere,
             select,
             orderBy: orderByOptions,
             skip: (page - 1) * pageSize,
             take: pageSize,
           }),
-          this.prismaModel.count({ where }),
+          this.prismaModel.count({ finalWhere }),
         ]);
 
         return {
@@ -194,8 +185,8 @@ export abstract class BasePrismaRepository<
         };
       }
 
-      return this.prismaModel.findMany({
-        where,
+      return await this.prismaModel.findMany({
+        finalWhere,
         select,
         orderBy: this.buildOrderBy(orderBy),
       });

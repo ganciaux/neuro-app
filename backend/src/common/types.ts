@@ -1,5 +1,9 @@
 // src/common/types.ts
 
+export type StringFields<T> = {
+    [K in keyof T]: T[K] extends string ? K : never;
+  }[keyof T];
+  
 /**
  * Pagination options for queries.
  */

@@ -4,7 +4,7 @@ import { IUserRepository } from "./IUserRepository";
 import { BasePrismaRepository } from "../base/BasePrismaRepository";
 import { UserQueryOptions, UserOrderByInput } from "../../models/user.model";
 import { PaginationOptions, PaginatedResult } from "../../common/types";
-import { UserFetchByEmailFailedError, UserFetchFailedError, UserFetchByRoleFailedError } from "../../errors/user.errors";
+import { UserFetchByEmailFailedError, UserFetchFailedError } from "../../errors/user.errors";
 
 export class PrismaUserRepository extends BasePrismaRepository<
     User,
@@ -15,10 +15,10 @@ export class PrismaUserRepository extends BasePrismaRepository<
     UserQueryOptions
 > implements IUserRepository {
     async existsById(userId: string): Promise<boolean> {
-        return !!this.findById(userId);
+        return !!(await this.findById(userId));
     }
     async existsByEmail(email: string): Promise<boolean> {
-        return !!this.findByEmail(email);
+        return !!(await this.findByEmail(email));
     }
 
     async findByCriteria(criteria: { email?: string; id?: string; }): Promise<User | null> {
@@ -59,15 +59,15 @@ export class PrismaUserRepository extends BasePrismaRepository<
         paginationOptions?: Partial<PaginationOptions>,
         select?: any
     ): Promise<PaginatedResult<User> | User[]> {
-        return await this.find(undefined, paginationOptions, select, orderBy);
+        return await this.find(undefined, undefined, undefined, paginationOptions, select, orderBy);
     }
 
     async findByRole(role: Role, pagination?: Partial<PaginationOptions>, select?: any): Promise<PaginatedResult<User> | User[]> {
-        return await this.find({ role }, pagination, select);
+        return await this.find({ role }, undefined, undefined, pagination, select);
     }
 
     async search(queryOptions?: UserQueryOptions, orderBy?: UserOrderByInput, pagination?:
-        Partial<PaginationOptions>,select?: any): Promise<PaginatedResult<User> | User[]> {
-        return await this.find(queryOptions, pagination, select, orderBy);
+        Partial<PaginationOptions>, select?: any): Promise<PaginatedResult<User> | User[]> {
+        return await this.find(queryOptions, undefined, undefined, pagination, select, orderBy);
     }
 }

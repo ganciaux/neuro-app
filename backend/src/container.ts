@@ -4,6 +4,7 @@ import { UserService } from './services/user.service';
 import { prisma } from './config/database';
 import { IUserRepository } from './repositories/user/IUserRepository';
 import { AuthService } from './services/auth.service';
+import { UserModel } from './models/user.model';
 
 /**
  * Container class for dependency injection and service/repository management.
@@ -42,9 +43,9 @@ export class Container {
       Container.userRepository = new PrismaUserRepository(
         Container.getPrismaClient(),
         Container.getPrismaClient().user,
-        'User',
-        ['id', 'email', 'name', 'createdAt', 'updatedAt'],
-        ['email', 'name'],
+        UserModel.name,
+        UserModel.defaultFields,
+        UserModel.searchableFields,
       );
     }
     return Container.userRepository;

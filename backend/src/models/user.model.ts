@@ -1,6 +1,7 @@
 import { User, Role } from '@prisma/client';
-import { QueryOptions } from '../common/types';
+import { QueryOptions, StringFields } from '../common/types';
 import { PublicSelect } from './utils.model';
+import { prisma } from '../config/database';
 
 /**
  * Represents a user object without sensitive information (e.g., password).
@@ -85,3 +86,29 @@ export interface UserTestData {
   /** Authentication token. */
   token: string;
 }
+
+export const UserModel = {
+  name: 'User' as const,
+  
+  allFields: Object.keys(prisma.user.fields) as Array<keyof User>,
+  
+  defaultFields: [
+    'id',
+    'email', 
+    'name',
+    'createdAt',
+    'updatedAt'
+  ] as const satisfies Array<keyof User>,
+
+  searchableFields: [
+    'email',
+    'name'
+  ] as const satisfies Array<StringFields<User>>,
+
+  relations: [] as const
+};
+
+// Types dérivés
+export type UserField = keyof User;
+export type UserDefaultField = typeof UserModel.defaultFields[number];
+export type UserSearchableField = typeof UserModel.searchableFields[number];

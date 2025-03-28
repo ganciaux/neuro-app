@@ -183,7 +183,7 @@ export class UserService {
     paginationOptions?: Partial<PaginationOptions>,
     select?: any
   ): Promise<PaginatedResult<UserPublicDto> | UserPublicDto[]> {
-    const users = await this.userRepository.find(undefined, paginationOptions, select, orderBy);
+    const users = await this.userRepository.find(undefined, undefined, undefined, paginationOptions, select, orderBy);
     if (Array.isArray(users)) {
       return this.toPublicList(users);
     } else {

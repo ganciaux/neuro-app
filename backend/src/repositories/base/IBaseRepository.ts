@@ -2,6 +2,7 @@ import {
   PaginatedResult,
   PaginationOptions,
   QueryOptions,
+  StringFields,
 } from '../../common/types';
 
 /**BaseFilterOptions,
@@ -17,6 +18,8 @@ export interface IBaseRepository<
 > {
   find(
     where?: WhereInput,
+    filters?: FilterOptions,
+    searchFields?: StringFields<WhereInput>[],
     pagination?: Partial<PaginationOptions>,
     select?: any,
     orderBy?: OrderByInput

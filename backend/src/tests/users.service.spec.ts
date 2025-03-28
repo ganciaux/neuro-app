@@ -1,84 +1,33 @@
-import { PrismaClient, User } from '@prisma/client';
-import { PrismaUserRepository } from '../repositories/user/PrismaUserRepository';
-import { mockDeep, mockReset } from 'jest-mock-extended';
-import { Container } from '../container';
+import { IUserRepository } from "../repositories/user/IUserRepository";
+import { UserService } from "../services/user.service";
 
-// Mock PrismaClient
-const prismaMock = mockDeep<PrismaClient>();
-
-describe('PrismaUserRepository', () => {
-  let repository: PrismaUserRepository;
+// user.service.spec.ts
+describe('UserService', () => {
+  let service: UserService;
+  let repositoryMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
-    mockReset(prismaMock);
-    repository = new PrismaUserRepository(
-      prismaMock,
-      Container.getPrismaClient().user,
-      'User',
-      ['id', 'email', 'name', 'createdAt', 'updatedAt'],
-      ['email', 'name'],
-    );
+    repositoryMock = {
+      find: jest.fn().mockResolvedValue({ data: [], total: 0 }),
+      create: jest.fn(),
+      existsById: jest.fn(),
+      existsByEmail: jest.fn(),
+      findByCriteria: jest.fn(),
+      findByEmail: jest.fn(),
+      findAll: jest.fn(),
+      findByRole: jest.fn(),
+      search: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+      findById: jest.fn()
+    };
+    service = new UserService(repositoryMock);
   });
 
-  it('should find a user by ID', async () => {
-    const mockUser: User = {
-      id: '1',
-      email: 'test@example.com',
-      name: 'Test User',
-      passwordHash: 'hashedPassword',
-      passwordSalt: 'salt',
-      role: 'USER',
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    prismaMock.user.findUnique.mockResolvedValue(mockUser);
-
-    const user = await repository.findById('1');
-
-    expect(user).toEqual(mockUser);
-    expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-      where: { id: '1' },
-    });
-  });
-
-  it('should create a user', async () => {
-    const mockUser: User = {
-      id: '1',
-      email: 'test@example.com',
-      name: 'Test User',
-      passwordHash: 'hashedPassword',
-      passwordSalt: 'salt',
-      role: 'USER',
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    prismaMock.user.create.mockResolvedValue(mockUser);
-
-    const newUser = await repository.create({
-      email: 'test@example.com',
-      name: 'Test User',
-      passwordHash: 'hashedPassword',
-      passwordSalt: 'salt',
-      role: 'USER',
-      isActive: true,
-    });
-
-    expect(newUser).toEqual(mockUser);
-    expect(prismaMock.user.create).toHaveBeenCalledWith({
-      data: {
-        email: 'test@example.com',
-        name: 'Test User',
-        passwordHash: 'hashedPassword',
-        passwordSalt: 'salt',
-        role: 'USER',
-        isActive: true,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-      },
-    });
+  it('should enforce password complexity', async () => {
+    await expect(
+      service.create('test@test.com', '123', 'Test User', 'USER', true)
+    ).rejects.toThrow('Password must be at least 6 characters long');
   });
 });

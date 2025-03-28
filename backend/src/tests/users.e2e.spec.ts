@@ -6,7 +6,7 @@ import { UserTestData } from '../models/user.model';
 
 const API_BASE_PATH = '/api/v1/users';
 
-logger.info('users.routes.spec: JEST: 🪪 User Routes');
+logger.info('users.e2e.spec: JEST: 🪪 User E2E');
 
 describe.skip('User Routes', () => {
   /*
