@@ -22,8 +22,8 @@ export class UserService {
       throw new UserInvalidDataError('Invalid email format');
     }
 
-    if (UserValidator.validatePasswordStrength(password)) {
-      throw new UserInvalidDataError('Password must be at least 6 characters long');
+    if (!UserValidator.validatePasswordStrength(password)) {
+      throw new UserInvalidDataError('Password is not strong enough');
     }
   }
 
@@ -117,6 +117,10 @@ export class UserService {
     return this.toPublic(user);
   }
 
+  toUserPublicList(users: User[]): UserPublicDto[] {
+    return this.toPublicList(users);
+  }
+
   /**
    * Verifies if a password matches a user's password
    */
@@ -185,11 +189,11 @@ export class UserService {
   ): Promise<PaginatedResult<UserPublicDto> | UserPublicDto[]> {
     const users = await this.userRepository.find(undefined, undefined, undefined, paginationOptions, select, orderBy);
     if (Array.isArray(users)) {
-      return this.toPublicList(users);
+      return this.toUserPublicList(users);
     } else {
       return {
         ...users,
-        data: this.toPublicList(users.data)
+        data: this.toUserPublicList(users.data)
       };
     }
   }

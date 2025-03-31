@@ -1,10 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role, User } from "@prisma/client";
 import { mockDeep, mockReset } from "jest-mock-extended";
 import { PrismaUserRepository } from "../repositories/user/PrismaUserRepository";
 import { UserModel } from "../models/user.model";
 
 describe('UserRepository', () => {
     let repository: PrismaUserRepository;
+    let mockUser: User;
+    let date: Date;
     const prismaMock = mockDeep<PrismaClient>();
 
     beforeEach(() => {
@@ -16,14 +18,27 @@ describe('UserRepository', () => {
             UserModel.defaultFields,
             UserModel.searchableFields,
         );
+
+        date = new Date();
+        mockUser = {
+            id: '1',
+            email: 'test@test.com',
+            name: 'Test User',
+            createdAt: date,
+            updatedAt: date,
+            passwordHash: 'mockedHashedPassword',
+            passwordSalt: 'mockedSalt',
+            role: Role.USER,
+            isActive: true
+        };
     });
 
     it('should find user by id', async () => {
-        prismaMock.user.findUnique.mockResolvedValue({ id: '1', email: 'test@test.com', name: 'Test User', createdAt: new Date(), updatedAt: new Date(), passwordHash: '123', passwordSalt: '123', role: 'USER', isActive: true });
+        prismaMock.user.findUnique.mockResolvedValue(mockUser);
 
-        const user = await repository.findById('1');
+        const user = await repository.findById(mockUser.id);
 
-        expect(user).toEqual({ id: '1', email: 'test@test.com', name: 'Test User', createdAt: new Date(), updatedAt: new Date(), passwordHash: '123', passwordSalt: '123', role: 'USER', isActive: true });
+        expect(user).toEqual(mockUser);
         expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
             where: { id: '1' }
         });
