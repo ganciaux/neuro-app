@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import { IUserRepository } from "../repositories/user/IUserRepository";
 import { UserService } from "../services/user.service";
 import { UserPublicDto } from "../models/user.model";
-import { UserMapper } from "../mappers/UserMapper";
 
 jest.mock('bcryptjs');
 

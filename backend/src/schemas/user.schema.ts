@@ -4,21 +4,21 @@ import { UserValidator } from '../validators/user.validator';
 import { Role } from '@prisma/client';
 import { PaginationSchema, createPaginatedSchema } from './utils.schema';
 
-const emailValidation = z.string().refine(
+export const emailValidation = z.string().refine(
   value => UserValidator.validateEmail(value), 
   { message: 'The email must be a valid email address.' }
 );
 
-const userIdValidation = z.string().refine(
+export const userIdValidation = z.string().refine(
   value => UserValidator.validateUserId(value),
   { message: 'The user ID must be a valid UUID.' }
 );
 
-const UserRoleValidation = z.nativeEnum(Role);
+export const UserRoleValidation = z.nativeEnum(Role);
 
-const passwordValidation = z.string().refine(
+export const passwordValidation = z.string().refine(
   value => UserValidator.validatePasswordStrength(value),
-  { message: 'The password must be at least 6 characters long.' }
+  { message: 'Password is not strong enough.' }
 );
 
 const orderByValidation = z.string()
@@ -32,7 +32,7 @@ const orderByValidation = z.string()
  * - Ensures the user ID is a valid UUID.
  */
 export const UserIdSchema = z.object({
-  userId: userIdValidation
+  id: userIdValidation
 });
 
 /**
@@ -76,13 +76,13 @@ export const UserJWTPayloadSchema = z.object({
  */
 export const UserUpdateSchema = z.object({
   /** User email. */
-  email: emailValidation,
+  email: emailValidation.optional(),
   /** User password. */
-  password: passwordValidation,
+  password: passwordValidation.optional(),
   /** User name (optional). */
   name: z.string().optional(),
   /** User role. */
-  role: UserRoleValidation
+  role: UserRoleValidation.optional(),
 });
 
 /**
@@ -95,7 +95,7 @@ export const UserCreateSchema = z.object({
   /** User password. */
   password: passwordValidation,
   /** User role. */
-  role: UserRoleValidation,
+  role: UserRoleValidation.default(Role.USER),
   /** User name (optional). */
   name: z.string().optional(),
 });

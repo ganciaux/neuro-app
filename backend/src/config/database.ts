@@ -23,6 +23,11 @@ export const prisma = new PrismaClient({
       level: 'warn',
     },
   ],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
 });
 
 /**
@@ -60,12 +65,14 @@ prisma.$on('query', (e) => {
  * Connects to the PostgreSQL database.
  * @throws {Error} If the connection fails.
  */
-export async function connectToDatabase(): Promise<void> {
+export async function prismaConnect(): Promise<void> {
   try {
     await prisma.$connect();
-    logger.info('database: ✅ Connected to PostgreSQL');
+    logger.info(`database: ✅ Connected to PostgreSQL`);
+    logger.info(`database: url: ${process.env.DATABASE_URL}`);
   } catch (err) {
     logger.error('database: ❌ Database connection error:', err);
     process.exit(1);
   }
 }
+

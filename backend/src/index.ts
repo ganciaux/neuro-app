@@ -1,5 +1,5 @@
-import { app, setupExpress } from './config/server';
-import { connectToDatabase } from './config/database';
+import { app, serverSetup } from './config/server';
+import { prismaConnect } from './config/database';
 import { APP_ENV } from './config/environment';
 import { logger } from './logger/logger';
 import { Server } from 'http';
@@ -17,9 +17,10 @@ let server: Server;
  *
  * @throws {Error} If the database connection fails or the server cannot start.
  */
-async function startServer(): Promise<void> {
-  await connectToDatabase();
-  setupExpress();
+async function serverStart(): Promise<void> {
+  await prismaConnect();
+  
+  serverSetup();
 
   server = app.listen(APP_ENV.PORT, () => {
     logger.info(`index: ${APP_ENV.NODE_ENV_LABEL}`);
@@ -27,7 +28,7 @@ async function startServer(): Promise<void> {
   });
 }
 
-startServer();
+serverStart();
 
 /**
  * Exported instances:

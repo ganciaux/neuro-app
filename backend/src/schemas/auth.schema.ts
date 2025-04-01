@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { emailValidation, passwordValidation } from './user.schema';
 
 /**
  * Schema for user login.
@@ -6,11 +7,9 @@ import { z } from 'zod';
  */
 export const AuthLoginSchema = z.object({
   /** Email address of the user. */
-  email: z.string().email({ message: 'Invalid email format.' }),
+  email: emailValidation,
   /** Password of the user. */
-  password: z
-    .string()
-    .min(6, { message: 'The password must be at least 6 characters long.' }),
+  password: passwordValidation
 });
 
 /**
@@ -19,9 +18,7 @@ export const AuthLoginSchema = z.object({
  */
 export const AuthRegisterSchema = z.object({
   /** Email address of the user. */
-  email: z.string().email('Invalid email format.'),
+  email: emailValidation,
   /** Password of the user. */
-  password: z
-    .string()
-    .min(6, 'The password must be at least 6 characters long.'),
+  password: passwordValidation
 });

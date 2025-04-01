@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { PrismaError } from '../errors/prisma.errors';
 import { UserError } from '../errors/user.errors';
 import { AuthError } from '../errors/auth.errors';
+import { JWTError } from '../errors/jwt.error';
 
 export function handleProcessErrors() {
   process.on('uncaughtException', (error) => {
@@ -82,9 +83,15 @@ export const errorHandler = (
     } else if (error instanceof AuthError) {
       response.status(error.statusCode).json({
         status: 'error',
-          message: error.message,
-          details: error.details,
-        });
+        message: error.message,
+        details: error.details,
+      });
+    } else if (error instanceof JWTError) {
+      response.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+        details: error.details,
+      });
     } else {
       sendErrorProd(error, request, response);
     }

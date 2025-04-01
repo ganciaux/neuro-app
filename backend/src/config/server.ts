@@ -27,7 +27,7 @@ const app = express();
  * - Exposes a `/routes` endpoint in development to list all routes.
  * - Sets up Swagger documentation.
  */
-export function setupExpress(): void {
+export function serverSetup(): void {
   // Handle uncaught exceptions and promise rejections
   handleProcessErrors();
 
@@ -54,10 +54,10 @@ export function setupExpress(): void {
     app.get('/routes', (req, res) => {
       res.json(listEndpoints(app));
     });
-  }
 
-  // Set up Swagger documentation
-  setupSwagger(app);
+    // Set up Swagger documentation
+    setupSwagger(app);
+  }
 }
 
 /**

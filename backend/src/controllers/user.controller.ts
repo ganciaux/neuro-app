@@ -5,6 +5,7 @@ import {
   UserEmailSchema,
   UserFindAllSchema,
   UserIdSchema,
+  userIdValidation,
   UserPasswordSchema,
   UserSearchSchema,
   UserUpdateSchema,
@@ -73,7 +74,7 @@ export const findMe = asyncHandler(
       `user.controller: findMe: [req:${request.requestId}]: findMe`,
     );
 
-    const { userId } = UserIdSchema.parse(request.body);
+    const userId = userIdValidation.parse(request.user?.id);
 
     const user = await userService.findByIdToPublic(userId);
 
@@ -97,9 +98,9 @@ export const findById = asyncHandler(
       `user.controller: findById: [req:${request.requestId}]: findById`,
     );
 
-    const { userId } = UserIdSchema.parse(request.params);
+    const { id } = UserIdSchema.parse(request.params);
 
-    const user = await userService.findById(userId);
+    const user = await userService.findById(id);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -120,9 +121,9 @@ export const findPublicById = asyncHandler(
     logger.info(
       `user.controller: findPublicById: [req:${request.requestId}]: findPublicById`,
     );
-    const { userId } = UserIdSchema.parse(request.params);
+    const { id } = UserIdSchema.parse(request.params);
 
-    const user = await userService.findByIdToPublic(userId);
+    const user = await userService.findByIdToPublic(id);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -254,15 +255,15 @@ export const update = asyncHandler(
       `user.controller: update: [req:${request.requestId}]: update`,
     );
 
-    const { userId } = UserIdSchema.parse(request.params);
+    const { id } = UserIdSchema.parse(request.params);
     const { name, email, role }: UserUpdateZodDTO = UserUpdateSchema.parse(
       request.body,
     );
 
-    const user = await userService.update(userId, { name, email, role });
+    const user = await userService.update(id, { name, email, role });
 
     if (!user) {
-      throw new UserUpdateFailedError(userId);
+      throw new UserUpdateFailedError(id);
     }
 
     const userPublic = userService.toUserPublic(user);
@@ -282,11 +283,11 @@ export const updatePassword = asyncHandler(
     logger.info(
       `user.controller: updatePassword: [req:${request.requestId}]: updatePassword`,
     );
-    const { userId } = UserIdSchema.parse(request.params);
+    const { id } = UserIdSchema.parse(request.params);
     const { currentPassword, newPassword } = UserPasswordSchema.parse(request.body);
-    const user = await userService.updatePassword(userId, currentPassword, newPassword);
+    const user = await userService.updatePassword(id, currentPassword, newPassword);
     if (!user) {
-      throw new UserUpdateFailedError(userId);
+      throw new UserUpdateFailedError(id);
     }
     response.json(user);
   },
@@ -303,10 +304,10 @@ export const deactivate = asyncHandler(
     logger.info(
       `user.controller: deactivate: [req:${request.requestId}]: deactivate`,
     );
-    const { userId } = UserIdSchema.parse(request.params);
-    const user = await userService.deactivate(userId);
+    const { id } = UserIdSchema.parse(request.params);
+    const user = await userService.deactivate(id);
     if (!user) {
-      throw new UserUpdateFailedError(userId);
+      throw new UserUpdateFailedError(id);
     }
     response.json(user);
   },
@@ -323,10 +324,10 @@ export const reactivate = asyncHandler(
     logger.info(
       `user.controller: reactivate: [req:${request.requestId}]: reactivate`,
     );
-    const { userId } = UserIdSchema.parse(request.params);
-    const user = await userService.reactivate(userId);
+    const { id } = UserIdSchema.parse(request.params);
+    const user = await userService.reactivate(id);
     if (!user) {
-      throw new UserUpdateFailedError(userId);
+      throw new UserUpdateFailedError(id);
     }
     response.json(user);
   },
@@ -344,12 +345,12 @@ export const remove = asyncHandler(
       `user.controller: remove: [req:${request.requestId}]: remove`,
     );
 
-    const { userId } = UserIdSchema.parse(request.body);
+    const { id } = UserIdSchema.parse(request.params);
 
-    const user = await userService.delete(userId);
+    const user = await userService.delete(id);
 
     if (!user) {
-      throw new UserDeletionFailedError(userId);
+      throw new UserDeletionFailedError(id);
     }
 
     response.status(204).send();

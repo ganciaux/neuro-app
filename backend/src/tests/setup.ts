@@ -1,5 +1,10 @@
-import request from 'supertest';
-import { app, server } from '../index';
+import dotenv from 'dotenv';
+import path from 'path';
+
+const envPath = path.resolve(process.cwd(), '.env.test');
+dotenv.config({ path: envPath, override: true });
+
+import { server } from '../index';
 import { UserTestData } from '../models/user.model';
 import { logger } from '../logger/logger';
 import { prisma } from '../config/database';
@@ -12,9 +17,8 @@ const authService = Container.getAuthService();
 
 beforeAll(async () => {
   logger.info('setup: JEST: 🛠️ Setting up before all tests');
-  await prisma.$connect();
-  await cleanupDatabase();
-  //await setupDatabase();
+  await databaseCleanup();
+  await databaseSetup();
 });
 
 beforeEach(async () => {});
@@ -22,8 +26,8 @@ beforeEach(async () => {});
 afterEach(async () => {});
 
 afterAll(async () => {
+  await databaseCleanup();
   logger.info('setup: JEST: 🔌 disconnect and close');
-  await prisma.$disconnect();
   server.close();
 });
 
@@ -33,9 +37,10 @@ export async function createTestUser(
   name: string = 'name',
   role: Role = Role.USER,
   token: boolean = true,
+  isActive: boolean = true,
 ): Promise<UserTestData> {
   let authToken: string = '';
-  const user = await userService.create(email, password, name, role, false);
+  const user = await userService.create(email, password, name, role, isActive);
 
   if (!user) {
     throw new UserCreationFailedError(email);
@@ -48,11 +53,13 @@ export async function createTestUser(
   return { user, email, password, token: authToken };
 }
 
-export async function cleanupDatabase() {
+export async function databaseCleanup() {
+  logger.info('setup: JEST: cleaning database');
   await prisma.user.deleteMany({});
 }
 
-export async function setupDatabase() {
+export async function databaseSetup() {
+  logger.info('setup: JEST: setting up database');
   globalThis.user = {} as any;
   globalThis.admin = {} as any;
 
@@ -61,6 +68,8 @@ export async function setupDatabase() {
     'passwordUser1.',
     'user',
     Role.USER,
+    true,
+    true,
   );
 
   globalThis.admin = await createTestUser(
@@ -68,5 +77,7 @@ export async function setupDatabase() {
     'passwordAdmin1.',
     'admin',
     Role.ADMIN,
+    true,
+    true,
   );
 }

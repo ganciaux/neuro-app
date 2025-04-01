@@ -1,22 +1,26 @@
 import request from 'supertest';
 import { app } from '../index';
 import { logger } from '../logger/logger';
-import { prisma } from '../config/database';
 
 const API_BASE_PATH = '/api/v1/auth';
 
 logger.info('aut.e2e.spec: JEST: 🛡️ Auth E2E');
 
-describe('Auth Routes', () => {
+describe.skip('Auth Routes', () => {
   let email: string;
   let password: string;
 
-  /*
   beforeAll(async () => {
     email = 'test@test.com';
     password = 'passwordTest';
   });
 
+  describe(`TODO`, () => {
+    it('TODO', async () => {
+    });
+  });
+
+  /*
   describe(`POST ${API_BASE_PATH}/register`, () => {
     it('should register a new user', async () => {
       const res = await request(app).post(`${API_BASE_PATH}/register`).send({

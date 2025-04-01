@@ -40,3 +40,6 @@ npx kill-port 3000
 
 psql -U neuro -d neuro_db
 psql -U neuro -d neuro_db_test
+\d+ "User";
+
+npx jest --clearCache

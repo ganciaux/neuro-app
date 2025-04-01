@@ -167,13 +167,13 @@ export abstract class BasePrismaRepository<
 
         const [items, total] = await Promise.all([
           this.prismaModel.findMany({
-            finalWhere,
+            where: finalWhere,
             select,
             orderBy: orderByOptions,
             skip: (page - 1) * pageSize,
             take: pageSize,
           }),
-          this.prismaModel.count({ finalWhere }),
+          this.prismaModel.count({ where: finalWhere }),
         ]);
 
         return {

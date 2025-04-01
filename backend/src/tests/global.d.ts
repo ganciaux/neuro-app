@@ -1,8 +1,8 @@
 export {};
 
-import { UserTest } from '../models/user.model';
+import { UserTestData } from '../models/user.model';
 
 declare global {
-  var user: UserTest;
-  var admin: UserTest;
+  var user: UserTestData;
+  var admin: UserTestData;
 }
