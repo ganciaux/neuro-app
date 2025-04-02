@@ -12,7 +12,7 @@ export default {
       'jest-html-reporter',
       {
         pageTitle: 'Jest Test Report',
-        outputPath: '<rootDir>/src/tests/test-report-e2e.html'
+        outputPath: '<rootDir>/src/tests/reports/e2e.html'
       }
     ]
   ],

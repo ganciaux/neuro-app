@@ -1,8 +1,8 @@
 import { Role, User } from "@prisma/client";
 import bcrypt from 'bcryptjs';
-import { IUserRepository } from "../repositories/user/IUserRepository";
-import { UserService } from "../services/user.service";
-import { UserPublicDto } from "../models/user.model";
+import { IUserRepository } from "../../repositories/user/IUserRepository";
+import { UserService } from "../../services/user.service";
+import { UserPublicDto } from "../../models/user.model";
 
 jest.mock('bcryptjs');
 

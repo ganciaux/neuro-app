@@ -21,6 +21,8 @@ export const passwordValidation = z.string().refine(
   { message: 'Password is not strong enough.' }
 );
 
+export const passwordLoginValidation = z.string().min(1, { message: 'Password is required.' });
+
 const orderByValidation = z.string()
 .transform(val => {
   const [field, direction] = val.split(':');

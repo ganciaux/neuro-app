@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { emailValidation, passwordValidation } from './user.schema';
+import { emailValidation, passwordLoginValidation, passwordValidation } from './user.schema';
 
 /**
  * Schema for user login.
@@ -9,7 +9,7 @@ export const AuthLoginSchema = z.object({
   /** Email address of the user. */
   email: emailValidation,
   /** Password of the user. */
-  password: passwordValidation
+  password: passwordLoginValidation
 });
 
 /**

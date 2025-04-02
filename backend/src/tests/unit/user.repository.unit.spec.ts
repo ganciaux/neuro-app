@@ -1,7 +1,7 @@
 import { PrismaClient, Role, User } from "@prisma/client";
 import { mockDeep, mockReset } from "jest-mock-extended";
-import { PrismaUserRepository } from "../repositories/user/PrismaUserRepository";
-import { UserModel } from "../models/user.model";
+import { PrismaUserRepository } from "../../repositories/user/PrismaUserRepository";
+import { UserModel } from "../../models/user.model";
 
 describe('UserRepository', () => {
     let repository: PrismaUserRepository;

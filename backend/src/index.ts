@@ -35,4 +35,4 @@ serverStart();
  * - `app`: Express application.
  * - `server`: HTTP server.
  */
-export { app, server };
+export { app, server, serverStart };
