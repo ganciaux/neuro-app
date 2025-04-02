@@ -4,7 +4,6 @@ import path from 'path';
 const envPath = path.resolve(process.cwd(), '.env.test');
 dotenv.config({ path: envPath, override: true });
 
-import { server } from '../index';
 import { UserTestData } from '../models/user.model';
 import { logger } from '../logger/logger';
 import { prisma } from '../config/database';
@@ -28,7 +27,6 @@ afterEach(async () => {});
 afterAll(async () => {
   await databaseCleanup();
   logger.info('setup: JEST: 🔌 disconnect and close');
-  server.close();
 });
 
 export async function createTestUser(
