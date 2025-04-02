@@ -76,3 +76,9 @@ export async function prismaConnect(): Promise<void> {
   }
 }
 
+/**
+ * Disconnects from the PostgreSQL database.
+ */
+export async function prismaDisconnect(): Promise<void> {
+  await prisma.$disconnect();
+}

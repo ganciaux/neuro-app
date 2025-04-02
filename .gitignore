@@ -19,9 +19,6 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Docs
-backend/docs/
-
 # TypeScript
 *.tsbuildinfo
 
@@ -43,8 +40,9 @@ Thumbs.db
 # Backend
 backend/node_modules/
 backend/dist/
+backend/docs/
 backend/prisma/migrations/
-backend/src/tests/test-report.html
+backend/src/tests/report
 
 # Frontend
 frontend/node_modules/
