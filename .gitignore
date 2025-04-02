@@ -42,7 +42,7 @@ backend/node_modules/
 backend/dist/
 backend/docs/
 backend/prisma/migrations/
-backend/src/tests/report
+backend/src/tests/reports
 
 # Frontend
 frontend/node_modules/
