@@ -65,11 +65,12 @@ prisma.$on('query', (e) => {
  * Connects to the PostgreSQL database.
  * @throws {Error} If the connection fails.
  */
-export async function prismaConnect(): Promise<void> {
+export async function prismaConnect(src: string=""): Promise<void> {
   try {
     await prisma.$connect();
-    logger.info(`database: ✅ Connected to PostgreSQL`);
+    logger.info(`database: ✅ Connected to PostgreSQL: ${src}`);
     logger.info(`database: url: ${process.env.DATABASE_URL}`);
+    logger.info(`database: env: ${process.env.NODE_ENV}`);
   } catch (err) {
     logger.error('database: ❌ Database connection error:', err);
     process.exit(1);
@@ -79,6 +80,7 @@ export async function prismaConnect(): Promise<void> {
 /**
  * Disconnects from the PostgreSQL database.
  */
-export async function prismaDisconnect(): Promise<void> {
+export async function prismaDisconnect(src: string=""): Promise<void> {
   await prisma.$disconnect();
+  logger.info(`database: ✅ Disconnected from PostgreSQL: ${src}`);
 }

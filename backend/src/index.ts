@@ -12,7 +12,7 @@ import { logger } from './logger/logger';
  * @throws {Error} If the database connection fails or the server cannot start.
  */
 async function serverStart(): Promise<void> {
-  await prismaConnect();
+  await prismaConnect("index.ts");
 
   app.listen(APP_ENV.PORT, () => {
     logger.info(`index: ${APP_ENV.NODE_ENV_LABEL}`);

@@ -1,12 +1,9 @@
 import { Role, User } from "@prisma/client";
-import bcrypt from 'bcryptjs';
-import { IUserRepository } from "../../repositories/user/IUserRepository";
-import { UserService } from "../../services/user.service";
-import { UserPublicDto } from "../../models/user.model";
+import { IUserRepository } from "../../../repositories/user/IUserRepository";
+import { UserService } from "../../../services/user.service";
+import { UserPublicDto } from "../../../models/user.model";
+import { bcryptMock, userRepositoryMock } from "../setup";
 
-jest.mock('bcryptjs');
-
-// user.service.spec.ts
 describe('UserService', () => {
   let service: UserService;
   let repositoryMock: jest.Mocked<IUserRepository>;
@@ -47,28 +44,21 @@ describe('UserService', () => {
       isActive: user.isActive,
       fullName: `${user.name}`
     }
+   
+    bcryptMock.genSalt.mockImplementation((rounds) => Promise.resolve('testSalt'));
+    bcryptMock.hash.mockImplementation((data, salt) => Promise.resolve('testHash'));
+    bcryptMock.compare.mockImplementation((data, encrypted) => Promise.resolve(true));
 
-    repositoryMock = {
-      find: jest.fn().mockResolvedValue({ data: [], total: 0 }),
-      create: jest.fn(),
-      existsById: jest.fn(),
-      existsByEmail: jest.fn(),
-      findByCriteria: jest.fn(),
-      findByEmail: jest.fn(),
-      findAll: jest.fn(),
-      findByRole: jest.fn(),
-      search: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-      findById: jest.fn()
-    };
-
-    (bcrypt.genSalt as jest.Mock).mockResolvedValue('mockedSalt');
-    (bcrypt.hash as jest.Mock).mockResolvedValue('mockedHashedPassword');
-    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
+    repositoryMock = userRepositoryMock;
+    repositoryMock.find = jest.fn().mockResolvedValue({ data: [], total: 0 });
     service = new UserService(repositoryMock);
+  });
+
+  test('bcrypt should be mocked', async () => {
+    console.log('Mock info:', bcryptMock.genSalt);
+    
+
+    expect(jest.isMockFunction(bcryptMock.genSalt)).toBe(true);
   });
 
   it('should email be invalid', async () => {
@@ -137,13 +127,13 @@ describe('UserService', () => {
 
   it('should throw error if current password is incorrect', async () => {
     repositoryMock.findById.mockResolvedValue(user);
-    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+    bcryptMock.compare.mockImplementation((data, encrypted) => Promise.resolve(false));
 
     await expect(service.updatePassword('1', 'wrongPass', 'newPass'))
       .rejects.toThrow('Current password is incorrect');
 
     expect(repositoryMock.findById).toHaveBeenCalledWith('1');
-    expect(bcrypt.compare).toHaveBeenCalledWith('wrongPass', user.passwordHash);
+    expect(bcryptMock.compare).toHaveBeenCalledWith('wrongPass', user.passwordHash);
   });
 
   it('should update password if current password is correct', async () => {
@@ -152,14 +142,14 @@ describe('UserService', () => {
     let newPasswordSalt = 'newSalt';
     repositoryMock.findById.mockResolvedValue(user);
     repositoryMock.update.mockResolvedValue({ ...user, passwordHash: newPasswordHash, passwordSalt: newPasswordSalt });
-    (bcrypt.genSalt as jest.Mock).mockResolvedValue(newPasswordSalt);
-    (bcrypt.hash as jest.Mock).mockResolvedValue(newPasswordHash);
+    bcryptMock.genSalt.mockImplementation((rounds) => Promise.resolve(newPasswordSalt));
+    bcryptMock.hash.mockImplementation((data, salt) => Promise.resolve(newPasswordHash));
 
     const updatedUser = await service.updatePassword(user.id, password, newPassword);
 
-    expect(bcrypt.compare).toHaveBeenCalledWith(password, user.passwordHash);
-    expect(bcrypt.genSalt).toHaveBeenCalled();
-    expect(bcrypt.hash).toHaveBeenCalledWith(newPassword, newPasswordSalt);
+    expect(bcryptMock.compare).toHaveBeenCalledWith(password, user.passwordHash);
+    expect(bcryptMock.genSalt).toHaveBeenCalled();
+    expect(bcryptMock.hash).toHaveBeenCalledWith(newPassword, newPasswordSalt);
     expect(repositoryMock.update).toHaveBeenCalledWith(user.id, {
       passwordHash: newPasswordHash,
       passwordSalt: newPasswordSalt,
@@ -170,21 +160,21 @@ describe('UserService', () => {
   });
 
   it('should return true if password matches', async () => {
-    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    bcryptMock.compare.mockImplementation((data, encrypted) => Promise.resolve(true));
 
     const result = await service.verifyPassword(user, password);
 
-    expect(bcrypt.compare).toHaveBeenCalledWith(password, user.passwordHash);
+    expect(bcryptMock.compare).toHaveBeenCalledWith(password, user.passwordHash);
     expect(result).toBe(true);
   });
 
   it('should return false if password does not match', async () => {
     let wrongPassword = "WrongPassword";
-    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+    bcryptMock.compare.mockImplementation((data, encrypted) => Promise.resolve(false));
 
     const result = await service.verifyPassword(user, wrongPassword);
 
-    expect(bcrypt.compare).toHaveBeenCalledWith(wrongPassword, user.passwordHash);
+    expect(bcryptMock.compare).toHaveBeenCalledWith(wrongPassword, user.passwordHash);
     expect(result).toBe(false);
   });
 

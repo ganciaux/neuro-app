@@ -1,10 +1,10 @@
 import request from 'supertest';
-import { app } from '../../config/server';
-import { logger } from '../../logger/logger';
-import { createTestUser } from '../setup';
-import { UserTestData } from '../../models/user.model';
+import { app } from '../../../config/server';
+import { logger } from '../../../logger/logger';
+import { createTestUser } from '../../setup';
+import { UserTestData } from '../../../models/user.model';
 import { Role } from '@prisma/client';
-import { Container } from '../../container';
+import { Container } from '../../../container';
 
 const userRepository = Container.getUserRepository();
 

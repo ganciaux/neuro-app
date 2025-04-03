@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { PrismaClient, Role, User } from "@prisma/client";
-import { UserService } from "../../services/user.service";
-import { PrismaUserRepository } from "../../repositories/user/PrismaUserRepository";
-import { Container } from "../../container";
-import { UserModel, UserPublicDto } from "../../models/user.model";
+import { UserService } from "../../../services/user.service";
+import { PrismaUserRepository } from "../../../repositories/user/PrismaUserRepository";
+import { Container } from "../../../container";
+import { UserModel, UserPublicDto } from "../../../models/user.model";
 
 const envPath = path.resolve(process.cwd(), '.env.test');
 dotenv.config({ path: envPath, override: true });

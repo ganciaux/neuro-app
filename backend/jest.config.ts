@@ -1,12 +1,16 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testMatch: ['**/*.spec.ts'], // ou ["**/*.test.ts"] selon vos fichiers
+  testMatch: [
+    '**/unit/**/*.spec.ts',
+    '**/integration/**/*.spec.ts',
+    '**/e2e/**/*.spec.ts',
+  ],
   moduleFileExtensions: ['ts', 'js', 'json'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  collectCoverageFrom: ['src/**/*.ts'], // Si vous voulez la couverture de test
+  collectCoverageFrom: ['src/**/*.ts'],
   verbose: true,
   reporters: [
     'default',
@@ -17,6 +21,10 @@ export default {
         outputPath: '<rootDir>/src/tests/reports/all.html',
       },
     ],
+  ],
+  setupFilesAfterEnv: [
+    '<rootDir>/src/tests/unit/setup.ts',
+    '<rootDir>/src/tests/e2e/setup.ts',
   ],
   globalSetup: '<rootDir>/src/tests/global-setup.ts',
 };

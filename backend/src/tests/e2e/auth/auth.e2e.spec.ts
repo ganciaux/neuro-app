@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { app } from '../../config/server';
-import { logger } from '../../logger/logger';
+import { logger } from '../../../logger/logger';
+import { app } from '../../../config/server';
 
 const API_BASE_PATH = '/api/v1/auth';
 
