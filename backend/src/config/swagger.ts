@@ -35,8 +35,18 @@ const swaggerSpec = swaggerJSDoc(options);
  * @param app - The Express application instance.
  */
 export function setupSwagger(app: Express): void {
+  const swaggerPath = '/api-docs';
+  const swaggerUrl = `http://localhost:${APP_ENV.PORT}${swaggerPath}`;
+
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   logger.info(
-    `📄 Swagger available at http://localhost:${APP_ENV.PORT}/api-docs`,
+    `📄 Swagger available at ${swaggerUrl}`,
+    `Swagger UI initialized`,
+    {
+      environment: APP_ENV.NODE_ENV_LABEL,
+      endpoint: swaggerPath,
+      url: swaggerUrl,
+      status: 'available'
+    }
   );
 }

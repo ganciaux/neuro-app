@@ -20,7 +20,7 @@ export class AuthService {
       Role.USER,
       true,
     );
-    logger.info(`auth.service: registerUser:`);
+    logger.debug(`auth.service: registerUser:`);
     if (!user) {
       throw new UserCreationFailedError(email);
     }
@@ -32,7 +32,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<string> {
-    logger.info(`auth.service: generateToken:`);
+    logger.debug(`auth.service: generateToken:`);
     const user = await this.userService.findByEmail(email);
 
     if (!user) {

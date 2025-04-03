@@ -5,7 +5,7 @@ import { logger } from '../logger/logger';
  * Prisma client instance with custom logging.
  */
 export const prisma = new PrismaClient({
-  log: [
+  log: process.env.NODE_ENV === 'test' ? [] :[
     {
       emit: 'event',
       level: 'query',
@@ -51,25 +51,28 @@ function formatExecutableQuery(query: string, params: string): string {
   return executableQuery;
 }
 
-// Log Prisma queries and their executable SQL versions
 prisma.$on('query', (e) => {
-  logger.info(
-    `database: Prisma query: ${e.query}; params=${e.params} duration=${e.duration}ms`,
-  );
-  logger.info(
-    `database: SQL query: ${formatExecutableQuery(e.query, e.params)};`,
-  );
+  if (process.env.NODE_ENV === 'production' && e.duration > 500) {
+    logger.warn(`database:Slow query (${e.duration}ms): ${formatExecutableQuery(e.query, e.params)}`);
+    return;
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    logger.debug(`database:Prisma query: ${e.query}`);
+    logger.verbose(`database:SQL executed: ${formatExecutableQuery(e.query, e.params)}`);
+    logger.debug(`database:Duration: ${e.duration}ms`);
+  }
 });
 
 /**
  * Connects to the PostgreSQL database.
  * @throws {Error} If the connection fails.
  */
-export async function prismaConnect(src: string=""): Promise<void> {
+export async function prismaConnect(): Promise<void> {
   try {
     await prisma.$connect();
-    logger.info(`database: ✅ Connected to PostgreSQL: ${src}`);
-    logger.info(`database: url: ${process.env.DATABASE_URL}`);
+    logger.info(`database: ✅ Connected to PostgreSQL`);
+    logger.debug(`database: url: ${process.env.DATABASE_URL}`);
     logger.info(`database: env: ${process.env.NODE_ENV}`);
   } catch (err) {
     logger.error('database: ❌ Database connection error:', err);
@@ -80,7 +83,7 @@ export async function prismaConnect(src: string=""): Promise<void> {
 /**
  * Disconnects from the PostgreSQL database.
  */
-export async function prismaDisconnect(src: string=""): Promise<void> {
+export async function prismaDisconnect(): Promise<void> {
   await prisma.$disconnect();
-  logger.info(`database: ✅ Disconnected from PostgreSQL: ${src}`);
+  logger.info(`database: 🔌 Disconnected from PostgreSQL`);
 }

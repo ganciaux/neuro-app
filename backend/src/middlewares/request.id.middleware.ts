@@ -18,7 +18,7 @@ export function requestIdMiddleware(
   const requestId = uuidv4();
   request.requestId = requestId;
   response.setHeader('X-Request-ID', requestId);
-  logger.info(`request.id.middleware: requestIdMiddleware: [${requestId}]: method=[${request.method}]`);
-  logger.info(`request.id.middleware: requestIdMiddleware: [${requestId}]: url=${request.originalUrl}`);
+  logger.debug(`request.id.middleware: requestIdMiddleware: [${requestId}]: method=[${request.method}]`);
+  logger.debug(`request.id.middleware: requestIdMiddleware: [${requestId}]: url=${request.originalUrl}`);
   next();
 }

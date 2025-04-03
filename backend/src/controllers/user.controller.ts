@@ -31,7 +31,7 @@ const userService = Container.getUserService();
  */
 export const findAll = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findAll: [req:${request.requestId}]: findAllHandler`,
     );
 
@@ -51,7 +51,7 @@ export const findAll = asyncHandler(
  */
 export const findAllPublic = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findAllPublic: [req:${request.requestId}]: findAllPublic`,
     );
     const { paginationOptions, orderBy }: UserFindAllZodDTO = UserFindAllSchema.parse(request.query);
@@ -70,7 +70,7 @@ export const findAllPublic = asyncHandler(
  */
 export const findMe = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findMe: [req:${request.requestId}]: findMe`,
     );
 
@@ -94,7 +94,7 @@ export const findMe = asyncHandler(
  */
 export const findById = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findById: [req:${request.requestId}]: findById`,
     );
 
@@ -118,7 +118,7 @@ export const findById = asyncHandler(
  */
 export const findPublicById = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findPublicById: [req:${request.requestId}]: findPublicById`,
     );
     const { id } = UserIdSchema.parse(request.params);
@@ -141,7 +141,7 @@ export const findPublicById = asyncHandler(
  */
 export const findByRole = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findByRole: [req:${request.requestId}]: findByRole`,
     );
     const { paginationOptions, orderBy, role }: UserFindAllZodDTO = UserFindAllSchema.parse(request.query);
@@ -160,7 +160,7 @@ export const findByRole = asyncHandler(
  */
 export const findByEmail = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: findUserByEmailHandler: [req:${request.requestId}]: findUserByEmailHandler`,
     );
     const { email } = UserEmailSchema.parse(request.params);
@@ -180,7 +180,7 @@ export const findByEmail = asyncHandler(
  */
 export const existsByEmail = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: existsByEmail: [req:${request.requestId}]: existsByEmail`,
     );
     const { email } = UserEmailSchema.parse(request.params);
@@ -197,7 +197,7 @@ export const existsByEmail = asyncHandler(
  */
 export const search = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: search: [req:${request.requestId}]: search`,
     );
 
@@ -224,7 +224,7 @@ export const search = asyncHandler(
  */
 export const create = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: create: [req:${request.requestId}]: create`,
     );
 
@@ -251,7 +251,7 @@ export const create = asyncHandler(
  */
 export const update = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: update: [req:${request.requestId}]: update`,
     );
 
@@ -280,7 +280,7 @@ export const update = asyncHandler(
  */
 export const updatePassword = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: updatePassword: [req:${request.requestId}]: updatePassword`,
     );
     const { id } = UserIdSchema.parse(request.params);
@@ -301,7 +301,7 @@ export const updatePassword = asyncHandler(
  */
 export const deactivate = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: deactivate: [req:${request.requestId}]: deactivate`,
     );
     const { id } = UserIdSchema.parse(request.params);
@@ -321,7 +321,7 @@ export const deactivate = asyncHandler(
  */
 export const reactivate = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: reactivate: [req:${request.requestId}]: reactivate`,
     );
     const { id } = UserIdSchema.parse(request.params);
@@ -341,7 +341,7 @@ export const reactivate = asyncHandler(
  */
 export const remove = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(
+    logger.debug(
       `user.controller: remove: [req:${request.requestId}]: remove`,
     );
 

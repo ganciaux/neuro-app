@@ -8,7 +8,7 @@ describe('UserRepository', () => {
   let mockUser: User;
   let date: Date;
   const prismaMock = mockDeep<PrismaClient>();
-  jest.mock('../../config/database', () => ({
+  jest.mock('../../../config/database', () => ({
     prisma: prismaMock,
   }));
 

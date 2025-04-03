@@ -6,15 +6,16 @@ export function requestLogger(
   response: Response,
   next: NextFunction,
 ) {
-  const start = Date.now();
+  const startTime = process.hrtime.bigint();
 
   response.on('finish', () => {
-    const duration = Date.now() - start;
+    const durationNs = process.hrtime.bigint() - startTime;
+    const durationMs = Number(durationNs) / 1e6;
     const requestId = request.requestId || '<none>';
     try {
-      logger.info(`request.logger.middleware: requestLogger: [${requestId}]: duration=${duration}ms`);
-      logger.info(`request.logger.middleware: requestLogger: [${requestId}]: statusCode=${response.statusCode}`);
-      logger.info(
+      logger.debug(`request.logger.middleware: requestLogger: [${requestId}]: duration=${durationMs}ms`);
+      logger.debug(`request.logger.middleware: requestLogger: [${requestId}]: statusCode=${response.statusCode}`);
+      logger.debug(
         `request.logger.middleware: requestLogger: [${requestId}]: headers=${JSON.stringify(maskSensitiveHeaders(request.headers))}`,
       );
       logger.info(

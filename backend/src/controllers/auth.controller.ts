@@ -14,7 +14,7 @@ const authService = Container.getAuthService();
  */
 export const register = asyncHandler(
   async (request: Request, response: Response, next: NextFunction) => {
-    logger.info(
+    logger.debug(
       `auth.controller: register: [req:${request.requestId}]: register`,
     );
     const { email, password }: AuthRegisterDTO = AuthRegisterSchema.parse(
@@ -33,7 +33,7 @@ export const register = asyncHandler(
  */
 export const login = asyncHandler(
   async (request: Request, response: Response) => {
-    logger.info(`auth.controller: login: [req:${request.requestId}]: login`);
+    logger.debug(`auth.controller: login: [req:${request.requestId}]: login`);
     const { email, password }: AuthLoginDTO = AuthLoginSchema.parse(
       request.body,
     );

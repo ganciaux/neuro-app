@@ -21,12 +21,12 @@ export function handleProcessErrors() {
   });
 
   process.on('SIGINT', async () => {
-    logger.info(`errorHandler: handleProcessErrors: 🛑 SIGINT received. Closing server...`);
+    logger.error(`errorHandler: handleProcessErrors: 🛑 SIGINT received. Closing server...`);
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
-    logger.info(`errorHandler: handleProcessErrors: 🛑 SIGTERM received. Closing server...`);
+    logger.error(`errorHandler: handleProcessErrors: 🛑 SIGTERM received. Closing server...`);
     process.exit(0);
   });
 }

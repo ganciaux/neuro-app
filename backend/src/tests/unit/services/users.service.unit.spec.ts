@@ -55,9 +55,6 @@ describe('UserService', () => {
   });
 
   test('bcrypt should be mocked', async () => {
-    console.log('Mock info:', bcryptMock.genSalt);
-    
-
     expect(jest.isMockFunction(bcryptMock.genSalt)).toBe(true);
   });
 

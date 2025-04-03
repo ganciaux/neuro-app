@@ -16,7 +16,7 @@ export default async () => {
     throw new Error('⚠️ Les tests doivent utiliser NODE_ENV=test !');
   }
 
-  await prismaConnect("global-setup.ts");
+  await prismaConnect();
 
   //await prisma.$executeRaw`TRUNCATE TABLE users CASCADE`;
 
