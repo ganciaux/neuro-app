@@ -43,3 +43,8 @@ psql -U neuro -d neuro_db_test
 \d+ "User";
 
 npx jest --clearCache
+
+    //"test": "dotenv -e .env.test -- jest --runInBand --detectOpenHandles --forceExit",
+    //"test:e2e": "dotenv -e .env.test -- jest --config=jest.config.e2e.ts --runInBand --detectOpenHandles --forceExit",
+    //"test:unit": "dotenv -e .env.test -- jest --config=jest.config.unit.ts --runInBand --detectOpenHandles --forceExit",
+    //"test:integration": "dotenv -e .env.test -- jest --config=jest.config.integration.ts --runInBand --detectOpenHandles --forceExit"    

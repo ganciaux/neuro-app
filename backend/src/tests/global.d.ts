@@ -1,9 +1,7 @@
 export {};
 
-import { UserTestData } from '../models/user.model';
+import request from 'supertest';
 
 declare global {
-  var user: UserTestData;
-  var admin: UserTestData;
   var testRequest: request.SuperTest<request.Test>;
 }

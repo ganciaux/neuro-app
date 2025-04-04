@@ -73,20 +73,6 @@ export interface UserOrderByInput {
   updatedAt?: 'asc' | 'desc';
 }
 
-/**
- * Represents test data for a user, including sensitive information.
- */
-export interface UserTestData {
-  /** Full user information from Prisma. */
-  user: User;
-  /** User email. */
-  email: string;
-  /** User password. */
-  password: string;
-  /** Authentication token. */
-  token: string;
-}
-
 export const UserModel = {
   name: 'User' as const,
   
@@ -108,7 +94,18 @@ export const UserModel = {
   relations: [] as const
 };
 
-// Types dérivés
+export type SeededUsers = {
+  admin: User & { token: string };
+  user: User & { token: string };
+};
+
+/**
+ * Represents the fields of a user.
+ */
 export type UserField = keyof User;
+
+/**
+ * Represents the default fields of a user.
+ */
 export type UserDefaultField = typeof UserModel.defaultFields[number];
 export type UserSearchableField = typeof UserModel.searchableFields[number];
