@@ -1,72 +1,98 @@
-// src/tests/test-helpers.ts
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 import { Express } from 'express';
 import { Server } from 'http';
 import { generateToken, hashPassword } from './utils/test-utils';
-import { mockDeep } from 'jest-mock-extended';
-import { SeededUsers } from '../models/user.model';
+import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
+import { SeededUsers, UserWithToken } from '../models/user.model';
 
-export const prismaMock = mockDeep<PrismaClient>();
+import { APP_ENV } from '../../src/config/environment';
 
-export const seedUsersTestData = async (prisma: PrismaClient): Promise<SeededUsers> => {
-  const { hash: passwordHashAdmin, salt: passwordSaltAdmin } = await hashPassword('PasswordAdmin1.');
-  const { hash: passwordHashUser, salt: passwordSaltUser } = await hashPassword('PasswordUser1.');
-  
-const [admin, user] = await Promise.all([ 
-    prisma.user.create({
-      data: {
-        email: 'admin@test.com',
-        role: Role.ADMIN,
-        passwordHash: passwordHashAdmin,
-        passwordSalt: passwordSaltAdmin,
-        isActive: true
-      }
-    }),
-    prisma.user.create({
-      data: {
-        email: 'user@test.com',
-        role: Role.USER,
-        passwordHash: passwordHashUser,
-        passwordSalt: passwordSaltUser,
-        isActive: true
-      }
-    })
-  ]);
+export default async () => {
+  if (APP_ENV.NODE_ENV !== 'test') {
+    throw new Error('⚠️ Test helpers must use NODE_ENV=test !');
+  }
+};
 
+export function createMockPrisma(): DeepMockProxy<PrismaClient> {
+  return mockDeep<PrismaClient>();
+}
+
+export const createUser = async (
+  prisma: PrismaClient,
+  email: string,
+  role: Role,
+  password: string,
+  isActive: boolean = true,
+): Promise<User> => {
+  const { hash, salt } = await hashPassword(password);
+
+  return prisma.user.create({
+    data: {
+      email,
+      role,
+      passwordHash: hash,
+      passwordSalt: salt,
+      isActive,
+    },
+  });
+};
+
+const withToken = (user: User): UserWithToken => {
   return {
-    admin: { ...admin, token: generateToken(admin) },
-    user: { ...user, token: generateToken(user) },
+    ...user,
+    token: generateToken(user),
   };
 };
 
-export async function startTestApp(app: Express): Promise<{ server: Server, prisma: PrismaClient }> {
+export const seedUsersTestData = async (
+  prisma: PrismaClient,
+): Promise<SeededUsers> => {
+  const [adminUser, regularUser] = await Promise.all([
+    createUser(prisma, 'admin@test.com', Role.ADMIN, 'PasswordAdmin1.'),
+    createUser(prisma, 'user@test.com', Role.USER, 'PasswordUser1.'),
+  ]);
+  return {
+    admin: withToken(adminUser),
+    user: withToken(regularUser),
+  };
+};
+
+export async function startE2EServer(
+  app: Express,
+): Promise<{ server: Server; prisma: PrismaClient }> {
   const server = app.listen(0);
-  const prisma = new PrismaClient({
-    datasources: {
-      db: { url: process.env.DATABASE_URL }
-    }
-  });
-  await prisma.$connect();
-  
+  const prisma = await startTestPrisma();
   return { server, prisma };
 }
 
-export async function stopTestApp(server: Server, prisma: PrismaClient) {
-  await prisma.$executeRaw`TRUNCATE TABLE "User" CASCADE`;
-  await prisma.$disconnect();
-  server.close();
+export async function startTestPrisma() {
+  const prisma = new PrismaClient({
+    datasources: { db: { url: process.env.DATABASE_URL } },
+  });
+  await prisma.$connect();
+  return prisma;
 }
 
+export const stopE2EServer = async (prisma: PrismaClient, server: Server) => {
+  await stopTestPrisma(prisma);
+  server.close();
+};
+
+export const stopTestPrisma = async (prisma: PrismaClient) => {
+  await prisma.$executeRaw`TRUNCATE TABLE "User" CASCADE`;
+  await prisma.$disconnect();
+};
+
 export const cleanNodeJsResources = async () => {
-    ['http', 'https'].forEach((module) => {
-      const agent = require(module).globalAgent;
-      agent.destroy();
-      agent.sockets = {};
-      agent.requests = {};
-    });
-  
-    jest.useFakeTimers();
-    jest.clearAllTimers();
-  
-    if (global.gc) global.gc();
-  };
+  ['http', 'https'].forEach((module) => {
+    const agent = require(module).globalAgent;
+    agent.destroy();
+    agent.sockets = {};
+    agent.requests = {};
+  });
+
+  jest.useFakeTimers();
+  jest.clearAllTimers();
+
+  if (global.gc) global.gc();
+};

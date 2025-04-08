@@ -29,8 +29,8 @@ const integrationConfig: Config.InitialOptions = {
 const e2eConfig: Config.InitialOptions = {
   ...baseConfig,
   displayName: 'e2e',
-  globalSetup: '<rootDir>/src/tests/global-setup.ts',
-  globalTeardown: '<rootDir>/src/tests/global-teardown.ts',
+  //globalSetup: '<rootDir>/src/tests/global-setup.ts',
+  //globalTeardown: '<rootDir>/src/tests/global-teardown.ts',
   setupFilesAfterEnv: ['<rootDir>/src/tests/e2e/setup.ts'],
   testMatch: ['<rootDir>/src/**/e2e/**/*.spec.ts'],
 };

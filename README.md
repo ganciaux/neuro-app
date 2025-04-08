@@ -48,3 +48,8 @@ npx jest --clearCache
     //"test:e2e": "dotenv -e .env.test -- jest --config=jest.config.e2e.ts --runInBand --detectOpenHandles --forceExit",
     //"test:unit": "dotenv -e .env.test -- jest --config=jest.config.unit.ts --runInBand --detectOpenHandles --forceExit",
     //"test:integration": "dotenv -e .env.test -- jest --config=jest.config.integration.ts --runInBand --detectOpenHandles --forceExit"    
+
+Type de test	Serveur	    DB réelle	Mocks
+Unitaire	    ❌	        ❌	        ✅
+Intégration	    ❌	        ✅	        ❌
+E2E	            ✅	        ✅	        ❌

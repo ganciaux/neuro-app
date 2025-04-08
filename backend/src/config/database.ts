@@ -99,7 +99,6 @@ export async function prismaDisconnect(): Promise<void> {
 
 export async function prismaInit() {
   try {
-    // 1. Extraire le nom de la DB depuis l'URL
     const dbUrl = new URL(process.env.DATABASE_URL!);
     const dbName = dbUrl.pathname.slice(1);
     dbUrl.pathname = '/postgres';

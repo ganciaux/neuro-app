@@ -1,10 +1,15 @@
 import request from 'supertest';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 import { Server } from 'http';
 import { logger } from '../../../logger/logger';
 import { Container } from '../../../container';
 import { authedRequest, unauthedRequest } from '../../utils/test-utils';
-import { seedUsersTestData, startTestApp, stopTestApp } from '../../test-helpers';
+import {
+  seedUsersTestData,
+  startE2EServer,
+  stopE2EServer,
+  createUser,
+} from '../../test-helpers';
 import { SeededUsers } from '../../../models/user.model';
 import { app } from '../../../config/server';
 
@@ -20,21 +25,26 @@ describe('User Routes', () => {
   let seededUsers: SeededUsers;
 
   beforeAll(async () => {
-    ({ server, prisma } = await startTestApp(app));
+    ({ server, prisma } = await startE2EServer(app));
     seededUsers = await seedUsersTestData(prisma);
   });
 
   afterAll(async () => {
-    await stopTestApp(server, prisma);
+    await stopE2EServer(prisma, server);
   });
-  
+
   describe(`GET ${API_BASE_PATH}/me`, () => {
     it('should get current user profile', async () => {
-      const res = await authedRequest(server, seededUsers.user, 'get', `${API_BASE_PATH}/me`);
+      const res = await authedRequest(
+        server,
+        seededUsers.user,
+        'get',
+        `${API_BASE_PATH}/me`,
+      );
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('email', seededUsers.user.email);
     });
-    
+
     it('should return 401 if not authenticated', async () => {
       const res = await unauthedRequest(server, 'get', `${API_BASE_PATH}/me`);
 
@@ -44,14 +54,12 @@ describe('User Routes', () => {
 
   describe(`GET ${API_BASE_PATH}/:id`, () => {
     it('should return a user by ID (admin)', async () => {
-
       const res = await request(server)
         .get(`${API_BASE_PATH}/${seededUsers.admin.id}`)
         .set('Authorization', `Bearer ${seededUsers.admin.token}`);
 
-        
-        expect(res.status).toBe(200);
-        expect(res.body).toHaveProperty('id', seededUsers.admin.id);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('id', seededUsers.admin.id);
     });
 
     it('should return 400 if user has bad ID (admin)', async () => {
@@ -70,7 +78,7 @@ describe('User Routes', () => {
       expect(res.status).toBe(404);
     });
   });
-  
+
   describe(`GET ${API_BASE_PATH}`, () => {
     it('should return all users when requested by an admin', async () => {
       const totalUsers = await userRepository.count();
@@ -80,7 +88,7 @@ describe('User Routes', () => {
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
-      expect(res.body.total	).toBe(totalUsers);
+      expect(res.body.total).toBe(totalUsers);
     });
 
     it('should return 403 when a non-admin user tries to get all users', async () => {
@@ -91,7 +99,6 @@ describe('User Routes', () => {
       expect(res.status).toBe(403);
     });
   });
-  
 
   describe(`POST ${API_BASE_PATH}`, () => {
     it('should create a new user if admin', async () => {
@@ -126,7 +133,6 @@ describe('User Routes', () => {
       expect(res.status).toBe(403);
     });
   });
-  
 
   describe(`PUT ${API_BASE_PATH}/:id`, () => {
     it('should update a user by ID if admin', async () => {
@@ -152,12 +158,17 @@ describe('User Routes', () => {
       expect(res.status).toBe(403);
     });
   });
-  
+
   describe(`DELETE ${API_BASE_PATH}/:id`, () => {
     let user: User;
 
     beforeEach(async () => {
-     user={} as User;
+      user = await createUser(
+        prisma,
+        'delete@delete.com',
+        Role.USER,
+        'PasswordUser1.',
+      );
     });
 
     it('should delete a user by ID if admin', async () => {
@@ -176,5 +187,4 @@ describe('User Routes', () => {
       expect(res.status).toBe(403);
     });
   });
-  
 });

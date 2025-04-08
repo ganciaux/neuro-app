@@ -1,17 +1,18 @@
-import { Role, User } from '@prisma/client';
-import { mockReset } from 'jest-mock-extended';
+import { PrismaClient, Role, User } from '@prisma/client';
+import { DeepMockProxy, mockReset } from 'jest-mock-extended';
 import { PrismaUserRepository } from '../../../repositories/user/PrismaUserRepository';
 import { UserModel } from '../../../models/user.model';
-import { prismaMock } from '../../test-helpers';
+import { createMockPrisma } from '../../test-helpers';
 
 describe('UserRepository', () => {
   let repository: PrismaUserRepository;
   let mockUser: User;
   let date: Date;
+  let prismaMock: DeepMockProxy<PrismaClient>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockReset(prismaMock);
+    prismaMock = createMockPrisma();
     repository = new PrismaUserRepository(
       prismaMock,
       prismaMock.user,

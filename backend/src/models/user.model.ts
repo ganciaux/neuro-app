@@ -6,7 +6,10 @@ import { prisma } from '../config/database';
 /**
  * Represents a user object without sensitive information (e.g., password).
  */
-export type UserPublic = Omit<User, 'passwordHash' | 'passwordSalt' | 'createdAt' | 'updatedAt'>
+export type UserPublic = Omit<
+  User,
+  'passwordHash' | 'passwordSalt' | 'createdAt' | 'updatedAt'
+>;
 
 export type UserPublicDto = UserPublic & {
   fullName: string;
@@ -18,7 +21,7 @@ export const UserPublicSelect: PublicSelect<UserPublic> = {
   email: true,
   role: true,
   name: true,
-  isActive: true
+  isActive: true,
 };
 
 /**
@@ -75,29 +78,30 @@ export interface UserOrderByInput {
 
 export const UserModel = {
   name: 'User' as const,
-  
+
   allFields: Object.keys(prisma.user.fields) as Array<keyof User>,
-  
+
   defaultFields: [
     'id',
-    'email', 
+    'email',
     'name',
     'createdAt',
-    'updatedAt'
+    'updatedAt',
   ] as const satisfies Array<keyof User>,
 
-  searchableFields: [
-    'email',
-    'name'
-  ] as const satisfies Array<StringFields<User>>,
+  searchableFields: ['email', 'name'] as const satisfies Array<
+    StringFields<User>
+  >,
 
-  relations: [] as const
+  relations: [] as const,
 };
 
-export type SeededUsers = {
-  admin: User & { token: string };
-  user: User & { token: string };
-};
+export type UserWithToken = User & { token: string };
+
+export interface SeededUsers {
+  admin: UserWithToken;
+  user: UserWithToken;
+}
 
 /**
  * Represents the fields of a user.
@@ -107,5 +111,5 @@ export type UserField = keyof User;
 /**
  * Represents the default fields of a user.
  */
-export type UserDefaultField = typeof UserModel.defaultFields[number];
-export type UserSearchableField = typeof UserModel.searchableFields[number];
+export type UserDefaultField = (typeof UserModel.defaultFields)[number];
+export type UserSearchableField = (typeof UserModel.searchableFields)[number];
