@@ -37,7 +37,18 @@ export const createUser = async (
   });
 };
 
-const withToken = (user: User): UserWithToken => {
+export const createUserWithToken = async (
+  prisma: PrismaClient,
+  email: string,
+  role: Role,
+  password: string,
+  isActive: boolean = true,
+): Promise<User> => {
+  const user = await createUser(prisma, email, role, password, isActive);
+  return withToken(user);
+};
+
+export const withToken = (user: User): UserWithToken => {
   return {
     ...user,
     token: generateToken(user),
@@ -74,8 +85,17 @@ export async function startTestPrisma() {
 }
 
 export const stopE2EServer = async (prisma: PrismaClient, server: Server) => {
+  await new Promise<void>((resolve, reject) => {
+    server.close((err) => {
+      if (err) {
+        console.error('Error closing server:', err);
+        return reject(err);
+      }
+      resolve();
+    });
+  });
+
   await stopTestPrisma(prisma);
-  server.close();
 };
 
 export const stopTestPrisma = async (prisma: PrismaClient) => {

@@ -1,7 +1,5 @@
-import request from 'supertest';
 import { PrismaClient, Role, User } from '@prisma/client';
 import { Server } from 'http';
-import { logger } from '../../../logger/logger';
 import { Container } from '../../../container';
 import { authedRequest, unauthedRequest } from '../../utils/test-utils';
 import {
@@ -16,8 +14,6 @@ import { app } from '../../../config/server';
 const userRepository = Container.getUserRepository();
 
 const API_BASE_PATH = '/api/v1/users';
-
-logger.info('users.e2e.spec: JEST: 🪪 User E2E');
 
 describe('User Routes', () => {
   let server: Server;
@@ -54,26 +50,35 @@ describe('User Routes', () => {
 
   describe(`GET ${API_BASE_PATH}/:id`, () => {
     it('should return a user by ID (admin)', async () => {
-      const res = await request(server)
-        .get(`${API_BASE_PATH}/${seededUsers.admin.id}`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'get',
+        `${API_BASE_PATH}/${seededUsers.admin.id}`,
+      );
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('id', seededUsers.admin.id);
     });
 
     it('should return 400 if user has bad ID (admin)', async () => {
-      const res = await request(server)
-        .get(`${API_BASE_PATH}/nonexistentid`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'get',
+        `${API_BASE_PATH}/nonexistentid`,
+      );
 
       expect(res.status).toBe(400);
     });
 
     it('should return 404 if user does not exist (admin)', async () => {
-      const res = await request(server)
-        .get(`${API_BASE_PATH}/c8cdf9ed-ef91-4203-942c-0d931157e1e1`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'get',
+        `${API_BASE_PATH}/c8cdf9ed-ef91-4203-942c-0d931157e1e1`,
+      );
 
       expect(res.status).toBe(404);
     });
@@ -82,9 +87,12 @@ describe('User Routes', () => {
   describe(`GET ${API_BASE_PATH}`, () => {
     it('should return all users when requested by an admin', async () => {
       const totalUsers = await userRepository.count();
-      const res = await request(server)
-        .get(`${API_BASE_PATH}`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'get',
+        `${API_BASE_PATH}`,
+      );
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -92,9 +100,12 @@ describe('User Routes', () => {
     });
 
     it('should return 403 when a non-admin user tries to get all users', async () => {
-      const res = await request(server)
-        .get(`${API_BASE_PATH}`)
-        .set('Authorization', `Bearer ${seededUsers.user.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.user,
+        'get',
+        `${API_BASE_PATH}`,
+      );
 
       expect(res.status).toBe(403);
     });
@@ -104,10 +115,12 @@ describe('User Routes', () => {
     it('should create a new user if admin', async () => {
       const email = 'createByAdmin@example.com';
       const password = 'PasswordNew1.';
-      const res = await request(server)
-        .post(`${API_BASE_PATH}`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`)
-        .send({
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'post',
+        `${API_BASE_PATH}`,
+        {
           email,
           password,
         });
@@ -122,10 +135,12 @@ describe('User Routes', () => {
     it('should return 403 if non-admin user tries to create a new user', async () => {
       const email = 'createByUser@example.com';
       const password = 'PasswordNew1.';
-      const res = await request(server)
-        .post(`${API_BASE_PATH}`)
-        .set('Authorization', `Bearer ${seededUsers.user.token}`)
-        .send({
+      const res = await authedRequest(
+        server,
+        seededUsers.user,
+        'post',
+        `${API_BASE_PATH}`,
+        {
           email,
           password,
         });
@@ -136,10 +151,12 @@ describe('User Routes', () => {
 
   describe(`PUT ${API_BASE_PATH}/:id`, () => {
     it('should update a user by ID if admin', async () => {
-      const res = await request(server)
-        .put(`${API_BASE_PATH}/${seededUsers.user.id}`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`)
-        .send({
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'put',
+        `${API_BASE_PATH}/${seededUsers.user.id}`,
+        {
           name: 'name - update',
         });
 
@@ -148,10 +165,12 @@ describe('User Routes', () => {
     });
 
     it('should return 403 if non-admin user tries to update another user', async () => {
-      const res = await request(server)
-        .put(`${API_BASE_PATH}/${seededUsers.user.id}`)
-        .set('Authorization', `Bearer ${seededUsers.user.token}`)
-        .send({
+      const res = await authedRequest(
+        server,
+        seededUsers.user,
+        'put',
+        `${API_BASE_PATH}/${seededUsers.user.id}`,
+        {
           name: 'name - update',
         });
 
@@ -172,17 +191,23 @@ describe('User Routes', () => {
     });
 
     it('should delete a user by ID if admin', async () => {
-      const res = await request(server)
-        .delete(`${API_BASE_PATH}/${user.id}`)
-        .set('Authorization', `Bearer ${seededUsers.admin.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.admin,
+        'delete',
+        `${API_BASE_PATH}/${user.id}`,
+      );
 
       expect(res.status).toBe(204);
     });
 
     it('should return 403 if non-admin user tries to delete a user', async () => {
-      const res = await request(server)
-        .delete(`${API_BASE_PATH}/${user.id}`)
-        .set('Authorization', `Bearer ${seededUsers.user.token}`);
+      const res = await authedRequest(
+        server,
+        seededUsers.user,
+        'delete',
+        `${API_BASE_PATH}/${user.id}`,
+      );
 
       expect(res.status).toBe(403);
     });
