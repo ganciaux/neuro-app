@@ -31,7 +31,6 @@ describe('Auth Routes', () => {
 
   afterAll(async () => {
     await stopE2EServer(prisma, server);
-    console.log('AfterAll completed');
   });
 
   describe(`POST ${API_BASE_PATH}/register`, () => {
