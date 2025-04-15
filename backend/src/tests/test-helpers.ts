@@ -3,7 +3,7 @@ import { Express } from 'express';
 import { Server } from 'http';
 import { generateToken, hashPassword } from './utils/test-utils';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { SeededUsers, UserWithToken } from '../models/user.model';
+import { SeededUsers, UserWithPasswordAndToken } from '../models/user.model';
 
 import { APP_ENV } from '../../src/config/environment';
 
@@ -20,6 +20,7 @@ export function createMockPrisma(): DeepMockProxy<PrismaClient> {
 export const createUser = async (
   prisma: PrismaClient,
   email: string,
+  name: string,
   role: Role,
   password: string,
   isActive: boolean = true,
@@ -29,6 +30,7 @@ export const createUser = async (
   return prisma.user.create({
     data: {
       email,
+      name,
       role,
       passwordHash: hash,
       passwordSalt: salt,
@@ -37,38 +39,45 @@ export const createUser = async (
   });
 };
 
-export const createUserWithToken = async (
+export const createUserWithPasswordAndToken = async (
   prisma: PrismaClient,
   email: string,
+  name: string,
   role: Role,
   password: string,
   isActive: boolean = true,
 ): Promise<User> => {
-  const user = await createUser(prisma, email, role, password, isActive);
-  return withToken(user);
+  const user = await createUser(prisma, email, name, role, password, isActive);
+  return withPasswordAndToken(user, password);
 };
 
-export const withToken = (user: User): UserWithToken => {
+export const withPasswordAndToken = (
+  user: User,
+  password: string,
+): UserWithPasswordAndToken => {
   return {
     ...user,
     token: generateToken(user),
+    password,
   };
 };
 
 export const seedUsersTestData = async (
   prisma: PrismaClient,
 ): Promise<SeededUsers> => {
+  const adminPassword = 'PasswordAdmin1.';
+  const userPassword = 'PasswordUser1.';
   const [adminUser, regularUser] = await Promise.all([
-    createUser(prisma, 'admin@test.com', Role.ADMIN, 'PasswordAdmin1.'),
-    createUser(prisma, 'user@test.com', Role.USER, 'PasswordUser1.'),
+    createUser(prisma, 'admin@test.com', 'Admin', Role.ADMIN, adminPassword),
+    createUser(prisma, 'user@test.com', 'User', Role.USER, userPassword),
   ]);
   return {
-    admin: withToken(adminUser),
-    user: withToken(regularUser),
+    admin: withPasswordAndToken(adminUser, adminPassword),
+    user: withPasswordAndToken(regularUser, userPassword),
   };
 };
 
-export async function startE2EServer(
+export async function startTestServer(
   app: Express,
 ): Promise<{ server: Server; prisma: PrismaClient }> {
   const server = app.listen(0);
@@ -84,7 +93,7 @@ export async function startTestPrisma() {
   return prisma;
 }
 
-export const stopE2EServer = async (prisma: PrismaClient, server: Server) => {
+export const stopTestServer = async (prisma: PrismaClient, server: Server) => {
   await new Promise<void>((resolve, reject) => {
     server.close((err) => {
       if (err) {

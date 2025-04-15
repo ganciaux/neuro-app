@@ -1,13 +1,7 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { createUser } from '../test-helpers';
-
-type UserOptions = {
-  email?: string;
-  role?: Role;
-  password?: string;
-  isActive?: boolean;
-};
+import { UserOptions } from '../../models/user.model';
 
 export const userFixture = {
   create: async (
@@ -17,6 +11,7 @@ export const userFixture = {
     return createUser(
       prisma,
       options.email || faker.internet.email().toLowerCase(),
+      options.name || faker.person.fullName(),
       options.role || Role.USER,
       options.password || `${faker.internet.password()}1A!`,
       options.isActive ?? true 
@@ -25,6 +20,7 @@ export const userFixture = {
 
   build: (options: Partial<UserOptions> = {}) => ({
     email: options.email || faker.internet.email().toLowerCase(),
+    name: options.name || faker.person.fullName(),
     password: options.password || `${faker.internet.password()}1A!`,
     role: options.role || Role.USER,
     isActive: options.isActive ?? true,

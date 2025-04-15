@@ -96,11 +96,22 @@ export const UserModel = {
   relations: [] as const,
 };
 
-export type UserWithToken = User & { token: string };
+export type UserOptions = {
+  email?: string;
+  name?: string;
+  role?: Role;
+  password?: string;
+  isActive?: boolean;
+};
+
+export type UserWithPasswordAndToken = User & {
+  token: string;
+  password: string;
+};
 
 export interface SeededUsers {
-  admin: UserWithToken;
-  user: UserWithToken;
+  admin: UserWithPasswordAndToken;
+  user: UserWithPasswordAndToken;
 }
 
 /**

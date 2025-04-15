@@ -4,29 +4,38 @@ import { Container } from '../../../container';
 import { authedRequest, unauthedRequest } from '../../utils/test-utils';
 import {
   seedUsersTestData,
-  startE2EServer,
-  stopE2EServer,
+  startTestServer,
+  stopTestServer,
   createUser,
 } from '../../test-helpers';
 import { SeededUsers } from '../../../models/user.model';
 import { app } from '../../../config/server';
+import { userFixture } from '../../fixtures/users';
 
 const userRepository = Container.getUserRepository();
 
 const API_BASE_PATH = '/api/v1/users';
 
 describe('User Routes', () => {
+  let user: User;
   let server: Server;
   let prisma: PrismaClient;
   let seededUsers: SeededUsers;
 
   beforeAll(async () => {
-    ({ server, prisma } = await startE2EServer(app));
+    ({ server, prisma } = await startTestServer(app));
+  });
+
+  beforeEach(async () => {
     seededUsers = await seedUsersTestData(prisma);
   });
 
+  afterEach(async () => {
+    await prisma.user.deleteMany();
+  });
+
   afterAll(async () => {
-    await stopE2EServer(prisma, server);
+    await stopTestServer(prisma, server);
   });
 
   describe(`GET ${API_BASE_PATH}/me`, () => {
@@ -43,7 +52,6 @@ describe('User Routes', () => {
 
     it('should return 401 if not authenticated', async () => {
       const res = await unauthedRequest(server, 'get', `${API_BASE_PATH}/me`);
-
       expect(res.status).toBe(401);
     });
   });
@@ -56,7 +64,6 @@ describe('User Routes', () => {
         'get',
         `${API_BASE_PATH}/${seededUsers.admin.id}`,
       );
-
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('id', seededUsers.admin.id);
     });
@@ -68,7 +75,6 @@ describe('User Routes', () => {
         'get',
         `${API_BASE_PATH}/nonexistentid`,
       );
-
       expect(res.status).toBe(400);
     });
 
@@ -79,7 +85,6 @@ describe('User Routes', () => {
         'get',
         `${API_BASE_PATH}/c8cdf9ed-ef91-4203-942c-0d931157e1e1`,
       );
-
       expect(res.status).toBe(404);
     });
   });
@@ -93,7 +98,6 @@ describe('User Routes', () => {
         'get',
         `${API_BASE_PATH}`,
       );
-
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.total).toBe(totalUsers);
@@ -106,7 +110,6 @@ describe('User Routes', () => {
         'get',
         `${API_BASE_PATH}`,
       );
-
       expect(res.status).toBe(403);
     });
   });
@@ -124,11 +127,9 @@ describe('User Routes', () => {
           email,
           password,
         });
-
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('id');
       expect(res.body).toHaveProperty('email');
-
       expect(res.body.email).toBe(email);
     });
 
@@ -144,7 +145,6 @@ describe('User Routes', () => {
           email,
           password,
         });
-
       expect(res.status).toBe(403);
     });
   });
@@ -159,7 +159,6 @@ describe('User Routes', () => {
         {
           name: 'name - update',
         });
-
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('name', 'name - update');
     });
@@ -179,18 +178,10 @@ describe('User Routes', () => {
   });
 
   describe(`DELETE ${API_BASE_PATH}/:id`, () => {
-    let user: User;
-
-    beforeEach(async () => {
-      user = await createUser(
-        prisma,
-        'delete@delete.com',
-        Role.USER,
-        'PasswordUser1.',
-      );
-    });
 
     it('should delete a user by ID if admin', async () => {
+      const userFake = userFixture.build();
+      const user = await createUser(prisma, userFake.email, userFake.name, Role.USER, userFake.password);
       const res = await authedRequest(
         server,
         seededUsers.admin,
@@ -202,6 +193,8 @@ describe('User Routes', () => {
     });
 
     it('should return 403 if non-admin user tries to delete a user', async () => {
+      const userFake = userFixture.build();
+      const user = await createUser(prisma, userFake.email, userFake.name, Role.USER, userFake.password);
       const res = await authedRequest(
         server,
         seededUsers.user,
