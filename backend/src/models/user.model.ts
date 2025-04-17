@@ -104,6 +104,14 @@ export type UserOptions = {
   isActive?: boolean;
 };
 
+export type UserFixtureOptions = {
+  email: string;
+  name: string;
+  role: Role;
+  password: string;
+  isActive: boolean;
+};
+
 export type UserWithPasswordAndToken = User & {
   token: string;
   password: string;
