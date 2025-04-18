@@ -23,6 +23,8 @@ interface AppEnv {
   JWT_EXPIRATION: number;
   /** The connection URL for the database. */
   DATABASE_URL: string;
+  /** The folder for storing uploaded files. */
+  UPLOAD_FOLDER: string;
 }
 
 /**
@@ -37,6 +39,7 @@ export const APP_ENV: AppEnv = {
   JWT_SECRET: process.env.JWT_SECRET || 'supersecretkey',
   JWT_EXPIRATION: parseInt(process.env.JWT_EXPIRATION || '3600', 10),
   DATABASE_URL: process.env.DATABASE_URL || '',
+  UPLOAD_FOLDER: process.env.UPLOAD_FOLDER || 'uploads',
 };
 
 // Validate required environment variables in production

@@ -6,7 +6,7 @@ import { generateToken, hashPassword } from '../../../tests/utils/test-utils';
 
 jest.mock('jsonwebtoken');
 jest.mock('bcryptjs');
-jest.mock('../../../src/config/environment');
+jest.mock('../../../config/environment');
 
 describe('generateToken', () => {
   const mockUser = {

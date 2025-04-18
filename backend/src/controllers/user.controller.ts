@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import { logger } from '../logger/logger';
 import {
   UserCreateSchema,
@@ -21,6 +21,7 @@ import {
 } from '../errors/user.errors';
 import { UserPublicSelect, UserQueryOptions } from '../models/user.model';
 import { Container } from '../container';
+import { FileService } from '../services/file.service';
 
 const userService = Container.getUserService();
 
@@ -355,4 +356,43 @@ export const remove = asyncHandler(
 
     response.status(204).send();
   },
+);
+
+/**
+ * Uploads a user's avatar.
+ * - Validates the user ID.
+ * - Uploads the user's avatar.
+ * - Returns the updated user's public profile.
+ */
+export const uploadUserAvatar = asyncHandler(
+  async (request: Request, response: Response) => {
+
+    if (!request.file) {
+      return response.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const { id } = UserIdSchema.parse(request.params);
+
+    const user = await userService.findById(id);
+
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+
+    /*
+    if (user.avatarPath) {
+      const oldPath = path.join(process.env.UPLOAD_FOLDER || 'uploads', user.avatarPath);
+      FileService.deleteFile(oldPath);
+    }
+   
+    const relativePath = FileService.getRelativePath('avatar', request.file.filename);
+
+    const updatedUser = await userService.update(id, { avatarPath: relativePath });
+
+    */
+    response.status(200).json({
+      avatarUrl: FileService.getPublicUrl('avatar', request.file.filename),
+      user,
+    });
+  }
 );

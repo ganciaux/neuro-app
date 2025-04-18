@@ -43,6 +43,9 @@ function serverSetup(): void {
   // Add request logging middleware
   app.use(requestLogger);
 
+  // Add upload folder middleware
+  app.use(APP_ENV.UPLOAD_FOLDER, express.static(APP_ENV.UPLOAD_FOLDER));
+
   // Register application routes
   app.use(routes);
 

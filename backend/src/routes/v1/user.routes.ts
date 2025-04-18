@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { findMe, findById, findPublicById, findAllPublic, findByEmail, existsByEmail, findByRole, search, create, update, updatePassword, deactivate, reactivate, remove, findAll } from '../../controllers/user.controller';
+import { findMe, findById, findPublicById, findAllPublic, findByEmail, existsByEmail, findByRole, search, create, update, updatePassword, deactivate, reactivate, remove, findAll, uploadUserAvatar } from '../../controllers/user.controller';
 import { adminGuard, authGuard } from '../../middlewares/auth.middleware';
+import { multerMiddleware } from '../../middlewares/multer.middleware';
 
 /**
  * Express router for user-related routes.
@@ -113,6 +114,13 @@ router.put('/:id/reactivate', authGuard, adminGuard, reactivate);
  * - Requires authentication and admin privileges.
  */
 router.delete('/:id', authGuard, adminGuard, remove);
+
+/**
+ * Route to upload a user's avatar.
+ * - POST /:id/avatar
+ * - Requires authentication and admin privileges.
+ */
+router.post('/:id/avatar', authGuard, adminGuard, multerMiddleware('user').single('file'), uploadUserAvatar);
 
 /**
  * Exports the user router.
