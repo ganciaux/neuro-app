@@ -1,7 +1,18 @@
-import { Role } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 import { userFixture } from '../../fixtures/users';
+import { DeepMockProxy } from 'jest-mock-extended';
+import { createMockPrisma, createMockUser } from '../../test-helpers';
 
 describe('User Fixtures', () => {
+  let prismaMock: DeepMockProxy<PrismaClient>;
+  let mockUser: User;
+  
+  beforeEach(() => {
+    prismaMock = createMockPrisma();
+    mockUser = createMockUser();
+    prismaMock.user.create.mockResolvedValue(mockUser);
+  });
+
   it('should generate valid user data', () => {
     const user = userFixture.build();
     expect(user.email).toMatch(/@.+\..+/);
@@ -23,6 +34,12 @@ describe('User Fixtures', () => {
     const user1 = userFixture.build();
     const user2 = userFixture.build();
     expect(user1.email).not.toBe(user2.email);
+  });
+
+  it('should create a user with a unique email', async () => {
+    prismaMock.user.create.mockResolvedValue(mockUser);
+    const user = await userFixture.create(prismaMock);
+    expect(user).toEqual(mockUser);
   });
 
 });

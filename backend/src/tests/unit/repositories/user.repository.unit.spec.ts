@@ -2,13 +2,12 @@ import { PrismaClient, Role, User } from '@prisma/client';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { PrismaUserRepository } from '../../../repositories/user/PrismaUserRepository';
 import { UserModel } from '../../../models/user.model';
-import { createMockPrisma } from '../../test-helpers';
+import { createMockPrisma, createMockUser } from '../../test-helpers';
 import { PaginatedResult } from '../../../common/types';
 
 describe('UserRepository', () => {
   let repository: PrismaUserRepository;
   let mockUser: User;
-  let date: Date;
   let prismaMock: DeepMockProxy<PrismaClient>;
 
   beforeEach(() => {
@@ -22,18 +21,7 @@ describe('UserRepository', () => {
       UserModel.searchableFields,
     );
 
-    date = new Date();
-    mockUser = {
-      id: '1',
-      email: 'test@test.com',
-      name: 'Test User',
-      createdAt: date,
-      updatedAt: date,
-      passwordHash: 'mockedHashedPassword',
-      passwordSalt: 'mockedSalt',
-      role: Role.USER,
-      isActive: true,
-    };
+    mockUser = createMockUser();
     prismaMock.user.findUnique.mockResolvedValue(mockUser);
   });
 

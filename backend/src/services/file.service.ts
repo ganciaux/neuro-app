@@ -2,7 +2,6 @@ import path, { join } from 'path';
 import { mkdirSync, existsSync, unlinkSync } from 'fs';
 import { format } from 'date-fns';
 import crypto from 'crypto';
-import { APP_ENV } from '../config/environment';
 
 export class FileService {
   static allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt'];

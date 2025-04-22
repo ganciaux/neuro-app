@@ -5,6 +5,8 @@ import { generateToken, hashPassword } from './utils/test-utils';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { SeededUsers, UserWithPasswordAndToken } from '../models/user.model';
 
+const date = new Date();
+
 import { APP_ENV } from '../../src/config/environment';
 
 export default async () => {
@@ -15,6 +17,20 @@ export default async () => {
 
 export function createMockPrisma(): DeepMockProxy<PrismaClient> {
   return mockDeep<PrismaClient>();
+}
+
+export function createMockUser(): User {
+  return {
+    id: '1',
+    email: 'test@test.com',
+    name: 'Test User',
+    createdAt: date,
+    updatedAt: date,
+    passwordHash: 'mockedHashedPassword',
+    passwordSalt: 'mockedSalt',
+    role: Role.USER,
+    isActive: true,
+  } 
 }
 
 export const createUser = async (
@@ -46,7 +62,7 @@ export const createUserWithPasswordAndToken = async (
   role: Role,
   password: string,
   isActive: boolean = true,
-): Promise<User> => {
+): Promise<UserWithPasswordAndToken> => {
   const user = await createUser(prisma, email, name, role, password, isActive);
   return withPasswordAndToken(user, password);
 };
