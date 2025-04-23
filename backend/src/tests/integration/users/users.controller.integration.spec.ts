@@ -1,4 +1,4 @@
-import { PrismaClient, Role, User } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { Server } from 'http';
 import { Container } from '../../../container';
 import { authedRequest, unauthedRequest } from '../../utils/test-utils';
@@ -17,7 +17,6 @@ const userRepository = Container.getUserRepository();
 const API_BASE_PATH = '/api/v1/users';
 
 describe('User Routes', () => {
-  let user: User;
   let server: Server;
   let prisma: PrismaClient;
   let seededUsers: SeededUsers;
@@ -124,8 +123,10 @@ describe('User Routes', () => {
         'post',
         `${API_BASE_PATH}`,
         {
-          email,
-          password,
+          body: {
+            email,
+            password,
+          },
         });
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('id');
@@ -142,8 +143,10 @@ describe('User Routes', () => {
         'post',
         `${API_BASE_PATH}`,
         {
-          email,
-          password,
+          body: {
+            email,
+            password,
+          },
         });
       expect(res.status).toBe(403);
     });
@@ -157,7 +160,9 @@ describe('User Routes', () => {
         'put',
         `${API_BASE_PATH}/${seededUsers.user.id}`,
         {
-          name: 'name - update',
+          body: {
+            name: 'name - update',
+          },
         });
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('name', 'name - update');
@@ -170,7 +175,9 @@ describe('User Routes', () => {
         'put',
         `${API_BASE_PATH}/${seededUsers.user.id}`,
         {
-          name: 'name - update',
+          body: {
+            name: 'name - update',
+          },
         });
 
       expect(res.status).toBe(403);
