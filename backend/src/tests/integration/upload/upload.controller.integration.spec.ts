@@ -14,7 +14,7 @@ import { app } from '../../../config/server';
 import { APP_ENV } from '../../../config/environment';
 
 const API_BASE_PATH = '/api/v1/upload';
-const TEST_UPLOAD_FOLDER = `${APP_ENV.TEST_UPLOAD_FOLDER}`;
+const TEST_UPLOAD_FOLDER = `${APP_ENV.UPLOAD_FOLDER}`;
 
 describe('FileService Integration', () => {
   const testFilePath = path.join(__dirname, '../../fixtures/test-image.jpg');
@@ -57,10 +57,7 @@ describe('FileService Integration', () => {
     expect(res.body).toHaveProperty('file');
     expect(res.body.file).toHaveProperty('originalName', 'test-image.jpg');
     expect(res.body.file).toHaveProperty('mimeType', 'image/jpeg');
-    //expect(res.body.file).toHaveProperty('path', path.join(TEST_UPLOAD_FOLDER, 'user/1/test-image.jpg'));
-    //expect(res.body.file).toHaveProperty('url', `http://localhost:3000/uploads/user/1/test-image.jpg`);
-
-    const filePath = path.join(TEST_UPLOAD_FOLDER, res.body.file.filename);
+    const filePath = path.join(process.cwd(), res.body.file.url);
     expect(fs.existsSync(filePath)).toBeTruthy();
   });
 
