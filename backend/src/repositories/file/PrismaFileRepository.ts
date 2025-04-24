@@ -1,0 +1,19 @@
+import { Prisma, File } from '@prisma/client';
+import { IFileRepository } from './IFileRepository';
+import { BasePrismaRepository } from '../base/BasePrismaRepository';
+import { FileQueryOptions, FileOrderByInput } from '../../models/file.model';
+import { PaginationOptions, PaginatedResult } from '../../common/types';
+
+export class PrismaFileRepository
+  extends BasePrismaRepository<
+    File,
+    Prisma.FileCreateInput,
+    Prisma.FileUpdateInput,
+    Prisma.FileWhereInput,
+    Prisma.FileOrderByWithRelationInput,
+    FileQueryOptions
+  >
+  implements IFileRepository
+{
+  
+}

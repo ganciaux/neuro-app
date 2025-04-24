@@ -59,6 +59,7 @@ export interface UserQueryOptions extends QueryOptions {
  */
 export interface UserWhereInput {
   id?: string;
+  name?: string;
   email?: string;
   role?: Role;
   isActive?: boolean;

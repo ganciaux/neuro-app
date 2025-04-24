@@ -19,6 +19,17 @@ enum Role {
   ADMIN
 }
 
+enum FileType {
+  AVATAR     // 1
+  DOCUMENT   // 2
+  REPORT     // 3
+  SIGNATURE  // 4
+}
+
+enum EntityType {
+  USER
+}
+
 model User {
   id        String  @id @default(uuid())
   email     String  @unique
@@ -29,6 +40,22 @@ model User {
   isActive Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+
+  @@index([role, isActive])
+}
+
+model File {
+  id          String   @id @default(uuid())
+  path        String   @unique
+  label       String
+  fileType    FileType
+  entityType  EntityType
+  entityId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([fileType])
 }
 
 
