@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { UserCreateSchema, UserFindAllSchema, UserOrderBySchema, UserSearchSchema, UserUpdateSchema } from '../schemas/user.schema';
-import { File } from '@prisma/client';
+import { FileType, EntityType } from '@prisma/client';
 
 export type FileCreateDTO = {
     id?: string;
-    label?: string;
-    path?: string;
-    entityType: string;
+    label: string;
+    path: string;
+    entityType: EntityType;
+    fileType: FileType;
     entityId: string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -16,8 +17,9 @@ export type FileUpdateDTO = {
     id?: string;
     label?: string;
     path?: string;
-    entityType: string;
-    entityId: string;
+    fileType?: FileType;
+    entityType?: EntityType;
+    entityId?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }

@@ -2,8 +2,13 @@ import path, { join } from 'path';
 import { mkdirSync, existsSync, unlinkSync } from 'fs';
 import { format } from 'date-fns';
 import crypto from 'crypto';
+import { File } from '@prisma/client';
+import { IFileRepository } from '../repositories/file/IFileRepository';
 
 export class FileService {
+
+  constructor(private fileRepository: IFileRepository) {}
+
   static allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt'];
 
   static getUploadPath(type: string): string {
@@ -51,5 +56,13 @@ export class FileService {
   static isExtensionAllowed(filename: string): boolean {
     const ext = filename.substring(filename.lastIndexOf('.')).toLowerCase();
     return this.allowedExtensions.includes(ext);
+  }
+
+  async createFile(file: File): Promise<File> {
+    return this.fileRepository.create(file);
+  }
+
+  async deleteFile(fileId: string): Promise<File> {
+    return this.fileRepository.delete(fileId);
   }
 }

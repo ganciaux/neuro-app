@@ -1,4 +1,4 @@
-import { File } from '@prisma/client';
+import { EntityType, File, FileType } from '@prisma/client';
 import { QueryOptions, StringFields } from '../common/types';
 import { prisma } from '../config/database';
 
@@ -41,8 +41,8 @@ export interface FileQueryOptions extends QueryOptions {
   id?: string;
   label?: string;
   path?: string;
-  fileType?: string;
-  entityType?: string;
+  fileType?: FileType;
+  entityType?: EntityType;
   entityId?: string;
 }
 
@@ -53,8 +53,8 @@ export interface FileWhereInput {
   id?: string;
   label?: string;
   path?: string;
-  fileType?: string;
-  entityType?: string;
+  fileType?: FileType;
+  entityType?: EntityType;
   entityId?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -73,7 +73,7 @@ export interface FileOrderByInput {
 export type FileOptions = {
   label?: string;
   path?: string;
-  fileType?: string;
-  entityType?: string;
+  fileType?: FileType;
+  entityType?: EntityType;
   entityId?: string;
 };
