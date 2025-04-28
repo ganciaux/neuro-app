@@ -166,6 +166,17 @@ export class UserService {
     return this.userRepository.findById(userId);
   }
 
+  async findByIdWithFiles(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    const files: File[] = [];
+    //const files = await this.fileService.findAllForEntity('USER', userId);
+    
+    return {
+      ...user,
+      files,
+    };
+  }
+
   /**
    * Finds a user by user id
    */

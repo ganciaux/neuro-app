@@ -10,6 +10,7 @@ import {
   handleProcessErrors,
 } from '../middlewares/error.handler.middleware';
 import { setupSwagger } from './swagger';
+import path from 'path';
 
 /**
  * Express application instance.
@@ -44,7 +45,7 @@ function serverSetup(): void {
   app.use(requestLogger);
 
   // Add upload folder middleware
-  app.use(APP_ENV.UPLOAD_FOLDER, express.static(APP_ENV.UPLOAD_FOLDER));
+  app.use('/uploads', express.static(path.join(process.cwd(), APP_ENV.UPLOAD_FOLDER)));
 
   // Register application routes
   app.use(routes);

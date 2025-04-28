@@ -18,7 +18,7 @@ describe('FileService', () => {
   });
 
   describe('getPublicUrl', () => {
-    it('devrait générer une URL publique correcte', () => {
+    it('should generate a correct public URL', () => {
       const type = 'user';
       const filename = 'avatar.jpg';
       const expectedUrl = `/uploads/user/2025/01/avatar.jpg`;

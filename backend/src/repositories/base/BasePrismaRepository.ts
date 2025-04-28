@@ -186,7 +186,7 @@ export abstract class BasePrismaRepository<
       }
 
       return await this.prismaModel.findMany({
-        finalWhere,
+        where: finalWhere,
         select,
         orderBy: this.buildOrderBy(orderBy),
       });

@@ -16,15 +16,19 @@ import { asyncHandler } from '../middlewares/async.handler.middleware';
 import {
   UserCreationFailedError,
   UserDeletionFailedError,
+  UserFileUploadFailedError,
   UserNotFoundError,
   UserUpdateFailedError,
 } from '../errors/user.errors';
 import { UserPublicSelect, UserQueryOptions } from '../models/user.model';
 import { Container } from '../container';
 import { FileService } from '../services/file.service';
+import { EntityType } from '@prisma/client';
+import { FileType } from '@prisma/client';
+import { unlinkSync } from 'fs';
 
 const userService = Container.getUserService();
-
+const fileService = Container.getFileService();
 /**
  * Retrieves all users.
  * - Fetches the public profiles of all users.
@@ -359,6 +363,44 @@ export const remove = asyncHandler(
 );
 
 /**
+ * Uploads the authenticated user's avatar.
+ */
+export const uploadMeAvatar = asyncHandler(
+  async (request: Request, response: Response) => {
+    let uploadedFilePath = '';
+    try {
+      if (!request.file) {
+        return response.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const userId = userIdValidation.parse(request.user?.id);
+      const user = await userService.findByIdToPublic(userId);
+
+      if (!user) {
+        throw new UserNotFoundError();
+      }
+
+      const fileRecord = await fileService.fileUpdateUpload(FileType.AVATAR, EntityType.USER, user.id, request.file);
+
+      uploadedFilePath = fileRecord.path;
+
+      response.status(200).json({
+        avatarUrl: FileService.getPublicUrl('avatar', request.file.filename),
+        user,
+      });
+    } catch (error) {
+      logger.error('Error during file upload process:', error);
+
+      if (uploadedFilePath) {
+        await FileService.safeUnlink(uploadedFilePath);
+      }
+
+      response.status(500).json({ message: 'An error occurred while uploading the avatar.' });
+    }
+  }
+);
+
+/**
  * Uploads a user's avatar.
  * - Validates the user ID.
  * - Uploads the user's avatar.
@@ -379,17 +421,18 @@ export const uploadUserAvatar = asyncHandler(
       throw new UserNotFoundError();
     }
 
-    /*
-    if (user.avatarPath) {
-      const oldPath = path.join(process.env.UPLOAD_FOLDER || 'uploads', user.avatarPath);
-      FileService.deleteFile(oldPath);
+    const fileRecord = await fileService.create({
+      label: request.file.filename,
+      path: request.file.path,
+      fileType: FileType.AVATAR,
+      entityType: EntityType.USER,
+      entityId: user.id
+    });
+
+    if (!fileRecord) {
+      throw new UserFileUploadFailedError(id);
     }
-   
-    const relativePath = FileService.getRelativePath('avatar', request.file.filename);
 
-    const updatedUser = await userService.update(id, { avatarPath: relativePath });
-
-    */
     response.status(200).json({
       avatarUrl: FileService.getPublicUrl('avatar', request.file.filename),
       user,

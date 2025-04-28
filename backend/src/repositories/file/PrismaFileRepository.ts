@@ -15,5 +15,18 @@ export class PrismaFileRepository
   >
   implements IFileRepository
 {
-  
+  async findAll(
+    orderBy?: FileOrderByInput,
+    paginationOptions?: Partial<PaginationOptions>,
+    select?: any,
+  ): Promise<PaginatedResult<File> | File[]> {
+    return await this.find(
+      undefined,
+      undefined,
+      undefined,
+      paginationOptions,
+      select,
+      orderBy,
+    );
+  }
 }

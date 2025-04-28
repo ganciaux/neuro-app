@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { findMe, findById, findPublicById, findAllPublic, findByEmail, existsByEmail, findByRole, search, create, update, updatePassword, deactivate, reactivate, remove, findAll, uploadUserAvatar } from '../../controllers/user.controller';
+import { findMe, findById, findPublicById, findAllPublic, findByEmail, existsByEmail, findByRole, search, create, update, updatePassword, deactivate, reactivate, remove, findAll, uploadUserAvatar, uploadMeAvatar } from '../../controllers/user.controller';
 import { adminGuard, authGuard } from '../../middlewares/auth.middleware';
 import { multerMiddleware } from '../../middlewares/multer.middleware';
 
@@ -22,6 +22,13 @@ router.get('/', authGuard, adminGuard, findAll);
  * - Requires authentication.
  */
 router.get('/me', authGuard, findMe);
+
+/**
+ * Route to upload the authenticated user's avatar.
+ * - PATCH /me/avatar
+ * - Requires authentication.
+ */
+router.patch('/me/avatar', authGuard, multerMiddleware('user').single('file'), uploadMeAvatar);
 
 /**
  * Route to fetch a user by ID.

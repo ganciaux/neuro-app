@@ -19,7 +19,7 @@ describe('UserService Integration', () => {
         UserModel.name,
         UserModel.defaultFields,
         UserModel.searchableFields,
-      ),
+      )
     );
   });
 

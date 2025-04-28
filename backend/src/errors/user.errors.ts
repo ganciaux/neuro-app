@@ -124,3 +124,15 @@ export class UserInvalidDataError extends UserError {
   }
 }
 
+/*
+  Error thrown when a user file upload fails.
+  - Extends `UserError`.
+  - Status code: 500 (Internal Server Error).
+*/
+export class UserFileUploadFailedError extends UserError {
+  constructor(userId: string, message: string = 'Failed to upload user file') {
+    super(message, 500);
+    this.message = `Failed to upload user file ${userId}`;
+  }
+}
+
