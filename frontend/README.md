@@ -25,3 +25,16 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+mkdir -p src/app/core/{services,guards,interceptors}
+auth.service.ts
+auth.guard.ts
+auth.interceptor.ts
+
+mkdir -p src/app/shared/{components,input-error,directives,pipes}
+composants réutilisables (input-error)
+directives personnalisées (autofocus)
+pipes (truncate...)
+
+ng generate component auth/pages/login --standalone --flat=false
+ng generate component auth/components/login-form --standalone --flat=false

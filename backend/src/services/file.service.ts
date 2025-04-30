@@ -92,8 +92,7 @@ export class FileService {
         logger.warn(`File does not exist: ${currentFile.path}`);
       }
     } catch (error) {
-      // Log de l'erreur de suppression avec un message détaillé
-      logger.error(`Error occurred while deleting old file: ${currentFile.path}`, error);
+        logger.error(`Error occurred while deleting old file: ${currentFile.path}`, error);
         throw new Error(`Failed to delete old file: ${currentFile.path}`);
       }
     }
