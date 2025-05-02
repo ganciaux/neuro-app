@@ -53,3 +53,5 @@ Type de test	Serveur	    DB réelle	Mocks
 Unitaire	    ❌	        ❌	        ✅
 Intégration	    ❌	        ✅	        ❌
 E2E	            ✅	        ✅	        ❌
+
+https://github.com/primefaces/sakai-ng/blob/master/src/assets/layout/_topbar.scss

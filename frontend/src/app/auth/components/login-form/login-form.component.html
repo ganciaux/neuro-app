@@ -1,1 +1,31 @@
-<p>login-form works!</p>
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="p-fluid">
+    <div class="field">
+      <p-floatlabel variant="on">
+      <label for="email">Email</label>
+      <input id="email" type="email" pInputText formControlName="email" />
+      </p-floatlabel>
+      @if(submitted && email?.invalid){
+        <p-message
+          severity="error"
+          text="Email invalide ou requis"
+        ></p-message>
+      }
+    </div>
+  
+    <div class="field">
+      <p-floatlabel variant="on">
+      <label for="password">Mot de passe</label>
+      <input id="password" type="password" pInputText formControlName="password" />
+      </p-floatlabel>
+      @if(submitted && password?.invalid){
+        <p-message
+        severity="error"
+        text="Mot de passe requis"
+      ></p-message>
+      }
+    </div>
+  
+    <button type="submit" pButton label="Connexion" class="mt-3 w-full">
+        <p-button label="Connexion" />
+    </button>
+  </form>
