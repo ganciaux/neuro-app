@@ -7,13 +7,13 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { RippleModule } from 'primeng/ripple';
 import { MessageModule } from 'primeng/message';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, MessageModule, CheckboxModule, RippleModule, FloatLabelModule],
+  imports: [RouterLink, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, MessageModule, CheckboxModule, RippleModule, FloatLabelModule],
   templateUrl: './login-form.component.html',
   styleUrls: ['./login-form.component.scss'],
 })
@@ -21,6 +21,12 @@ export class LoginFormComponent {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
+  
+  showPassword = false;
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
