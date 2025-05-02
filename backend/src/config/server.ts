@@ -33,7 +33,12 @@ function serverSetup(): void {
   handleProcessErrors();
 
   // Enable CORS
-  app.use(cors());
+  const corsOptions = {
+    origin: 'http://localhost:4200',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  };
+  app.use(cors(corsOptions));
 
   // Parse JSON requests
   app.use(express.json());

@@ -25,6 +25,8 @@ interface AppEnv {
   DATABASE_URL: string;
   /** The folder for storing uploaded files. */
   UPLOAD_FOLDER: string;
+  /** The allowed origins for CORS. */
+  ALLOWED_ORIGINS: string;
 }
 
 /**
@@ -40,6 +42,7 @@ export const APP_ENV: AppEnv = {
   JWT_EXPIRATION: parseInt(process.env.JWT_EXPIRATION || '3600', 10),
   DATABASE_URL: process.env.DATABASE_URL || '',
   UPLOAD_FOLDER: process.env.UPLOAD_FOLDER || 'uploads',
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || 'http://localhost:4200',
 };
 
 // Validate required environment variables in production
