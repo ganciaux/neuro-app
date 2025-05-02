@@ -43,7 +43,6 @@ export class LoginFormComponent {
           console.error('Login failed', err);
         }
       });
-      this.router.navigate(['/dashboard']);
     }
   }
 
