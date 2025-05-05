@@ -3,9 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-interface LoginDto {
+interface UserDto {
   email: string;
   password: string;
+  username?: string;
 }
 
 @Injectable({
@@ -15,7 +16,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  login(credentials: LoginDto): Observable<void> {
+  login(credentials: UserDto): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/login`, credentials, {
       withCredentials: true,
     });
@@ -23,6 +24,12 @@ export class AuthService {
 
   logout(): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/logout`, {}, {
+      withCredentials: true,
+    });
+  }
+
+  register(credentials: UserDto): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/register`, credentials, {
       withCredentials: true,
     });
   }

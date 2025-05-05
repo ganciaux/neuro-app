@@ -1,0 +1,25 @@
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    .field {
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  ::ng-deep .p-floatlabel {
+  position: relative;
+  
+  button {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+.p-inputtext, .p-message {
+  width: 100%;
+  box-sizing: border-box;
+}

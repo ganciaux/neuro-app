@@ -1,0 +1,6 @@
+<app-auth-form [mode]="AuthMode.REGISTER" [navigationTemplate]="registerNav" (submitForm)="onLogin($event)" ></app-auth-form>
+  
+  <ng-template #registerNav>
+    <a routerLink="/auth/login" class="p-button-text">Connexion</a>
+  </ng-template>
+
